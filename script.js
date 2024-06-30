@@ -1,44 +1,238 @@
 const player = "p"
+const grassEnd = "e";
+const grass = "g";
+const fadingGrass = "f";
+const tombstone = "t";
+const houseTopLeft = "["
+const houseTopRight = "]"
+const houseBottomLeft = "{";
+const houseBottomRight = "}";
+
+const PLAYER_WALK_SPEED = 1;
+
+// TEST MAP!! This is just a test for the screen scroller
+const actualMap = 
+map
+`
+pgggggg
+gg[]gtg
+gg{}ggt
+tgffggg
+ggggggg
+eeeeeee`;
+
+// Camera stuffs
+let camPosX = 0;
+let camPosY = 0;
+let camWidth = 6;
+let camHeight = 6;
 
 setLegend(
-  [ player, bitmap`
+  [player, bitmap`
 ................
 ................
 .......000......
-.......0.0......
-......0..0......
-......0...0.0...
-....0003.30.0...
-....0.0...000...
+.......0C0......
+......0660......
+......06660.0...
+....0003630.0...
+....0.0666000...
 ....0.05550.....
-......0...0.....
-.....0....0.....
-.....0...0......
+......06660.....
+.....0F6660.....
+.....0FF60......
 ......000.......
 ......0.0.......
 .....00.00......
-................` ]
-)
+................`],
+  [grassEnd, bitmap`
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+DDDDDDDDDDDDDDDD
+DDDDDDDDDDDDDDDD
+DDDDDDDDDDDDDDDD
+DDDDDDDDDDDDDDDD
+DDDDDDDDDDDDDDDD
+DDDDDDDDDDDDDDDD
+DDDDDDDDDDDDDDDD
+DDDDDDDDDDDDDDDD
+DDDDDDDDDDDDDDDD
+DDDDDDDDDDDDDDDD
+DDDDDDDDDDDDDDDD
+CCCCCCCCCCCCCCCC`],
+  [grass, bitmap`
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444`],
+  [fadingGrass, bitmap`
+DDDDDDDDDDDDDDDD
+DDDDDDDDDDDDDDDD
+DDDDDDDDDDDDDDDD
+4DDD4DDDD4DDD4DD
+4D4DD4DD4DD4DDD4
+444D4D4D4D44D4D4
+4D444D4D44D444D4
+444DD44D44D44444
+444D4D444DD444DD
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444`],
+  [tombstone, bitmap`
+4444444444444444
+4444444444444444
+444444LLLLL44444
+444444L111L44444
+44444LL111LL4444
+44444L11111L4444
+4444LL11111LL444
+4444L11LLL11L444
+4444L1111111L444
+4444L11LLL11L444
+4444L1111111L444
+4444LLLLLLLLL444
+444L111111111L44
+444LCLLLLLLLLLC4
+44CCCCCCCCCCCCC4
+4444444444444444`],
+  [houseTopLeft, bitmap`
+4444444444444440
+444444444444440C
+44444444444440CC
+4444444444440CCC
+444444444440CCCC
+44444444440CCCCC
+4444444440CCCCCC
+444444440C0CCCCC
+44444440CC00CCCC
+4444440CCCCC0CCC
+444440CCCCCCC0CC
+44440CCCCCCCCCCC
+4440CCCCCCCCCCCC
+440CCCCCCCCCCCCC
+40CCCCCCCCCCCCCC
+0000000000000000`],
+  [houseTopRight, bitmap`
+0444444444444444
+C044441114444444
+CC04444411444444
+CCC0444LLLLL4444
+CCCC044L111L4444
+CCCCC04LLLLL4444
+CC0CCC04L1L44444
+CCC0CCC0L1L44444
+CCC0CCCCL1L44444
+CCCCCCCCLFL44444
+CCCCCCCCC0044444
+CCCCCCFFCCC04444
+CCCCCCFFCCCC0444
+CCCCCCCCCCCCC044
+CCCCCCCCCCCCCC04
+0000000000000000`],
+  [houseBottomLeft, bitmap`
+4D40CCCCCCCCC011
+DDD0CCCCCCCCC011
+DDD0CCCCCCCCC011
+DDD0CCCC00CCC011
+DDD0CC3C09CCC011
+DDD0CC3CCCCCC011
+DDD0CC33CCCCC061
+DDD0CCCC3CCCC011
+DDD0CCC3CCCCC011
+DDD0CCCCC3CCC011
+DDD0CCCCC3CCC011
+DDD0CCCCCC3CC011
+DDD0CCCCCCCCC01L
+DDD0CCCCCCCCC011
+4D40CCCCCCCCC000
+4440000000000000`],
+  [houseBottomRight, bitmap`
+110CCCCCCCCC04D4
+110CCCCCCCCC0DDD
+110CCCCCCCCC0DDD
+110CC00CCCCC0DDD
+110CC90CCCCC0DDD
+110CCCCCCCCC0DDD
+110CCCCCCCCC0DDD
+110CCCCCCCCC0DDD
+110CCCCCCCCC0DDD
+110CCCCCCCCC0DDD
+110CCCCCCCCC0DDD
+110CCCCCCCCC0DDD
+L10CCCCCCCCC0DDD
+110CCCCCCCCC0DDD
+000CCCCCCCCC04D4
+0000000000000444`]
+);
+
+// This function trims the map, i will use it to "scroll" the map
+// also i hate this with a passion i spent like an hour trying to get this piece of garbage working(and i did, hopefull) but it still sucked
+// the worst part is that i was originall doing some crazy offset calculations due to line breaks, but then i realised i can just split from \n and i felt both happy and sad at the same time
+function trimMap(origMap) {
+  let ret = "";
+  origMap = origMap.trim();
+  const mapLines = origMap.split(`\n`);
+  const mapHeight = mapLines.length;
+  const mapWidth = mapLines[0].length;
+
+  for (let i = camPosY; i < Math.min(mapHeight, camHeight + camPosY); i++) {
+    for (let j = camPosX; j < Math.min(mapWidth, camWidth + camPosX); j++) {
+      ret += mapLines[i][j];
+    }
+    ret += "\n";
+  }
+
+  console.log(ret);
+  return ret;
+}
+
+
+setMap(trimMap(actualMap));
 
 setSolids([])
 
 let level = 0
 const levels = [
-  map`
-p.
-..`
 ]
 
-setMap(levels[level])
-
 setPushables({
-  [ player ]: []
+  [player]: []
+})
+
+onInput("w", () => {
+  getFirst(player).y -= PLAYER_WALK_SPEED
+})
+
+onInput("a", () => {
+  getFirst(player).x -= PLAYER_WALK_SPEED;
 })
 
 onInput("s", () => {
-  getFirst(player).y += 1
+  getFirst(player).y += PLAYER_WALK_SPEED;
+})
+
+onInput("d", () => {
+  getFirst(player).x += PLAYER_WALK_SPEED;
 })
 
 afterInput(() => {
-  
+  //setMap(trimMap(actualMap));
 })
