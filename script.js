@@ -1,33 +1,34 @@
-const player = "p"
+const player = "p";
 const grassEnd = "e";
 const grass = "g";
 const fadingGrass = "f";
 const tombstone = "t";
-const houseTopLeft = "["
-const houseTopRight = "]"
+const houseTopLeft = "[";
+const houseTopRight = "]";
 const houseBottomLeft = "{";
 const houseBottomRight = "}";
+const bullet = "b";
 
 const PLAYER_WALK_SPEED = 1;
 
-// TEST MAP!! This is just a test for the screen scroller
-const actualMap = 
-map
-`
-pgggggg
-gg[]gtg
-gg{}ggt
-tgffggg
-ggggggg
-eeeeeee`;
-
-// Camera stuffs
-let camPosX = 0;
-let camPosY = 0;
-let camWidth = 6;
-let camHeight = 6;
-
 setLegend(
+  [bullet, bitmap`
+................
+................
+................
+................
+..0000000000....
+.066F666C6220...
+.066C666C66220..
+.066C666C666660.
+.066C666C666660.
+.066C666C66660..
+.066C666F6660...
+..0000000000....
+................
+................
+................
+................`],
   [player, bitmap`
 ................
 ................
@@ -183,56 +184,68 @@ L10CCCCCCCCC0DDD
 0000000000000444`]
 );
 
-// This function trims the map, i will use it to "scroll" the map
-// also i hate this with a passion i spent like an hour trying to get this piece of garbage working(and i did, hopefull) but it still sucked
-// the worst part is that i was originall doing some crazy offset calculations due to line breaks, but then i realised i can just split from \n and i felt both happy and sad at the same time
-function trimMap(origMap) {
-  let ret = "";
-  origMap = origMap.trim();
-  const mapLines = origMap.split(`\n`);
-  const mapHeight = mapLines.length;
-  const mapWidth = mapLines[0].length;
+setBackground(grass);
 
-  for (let i = camPosY; i < Math.min(mapHeight, camHeight + camPosY); i++) {
-    for (let j = camPosX; j < Math.min(mapWidth, camWidth + camPosX); j++) {
-      ret += mapLines[i][j];
-    }
-    ret += "\n";
-  }
+setSolids([player]);
 
-  console.log(ret);
-  return ret;
+let level = 0;
+const levels = [
+    map`
+ggggggg
+gg[]gtg
+gg{}ggt
+tgffggg
+ggpgggg
+eeeeeee`
+];
+
+function getMapWidth() {
+  return levels[level].split("\n")[0].length;
 }
 
+function getMapHeight() {
+  return levels[level].split("\n").length;
+}
 
-setMap(trimMap(actualMap));
-
-setSolids([])
-
-let level = 0
-const levels = [
-]
+setMap(levels[level]);
 
 setPushables({
   [player]: []
-})
+});
 
 onInput("w", () => {
-  getFirst(player).y -= PLAYER_WALK_SPEED
-})
+  getFirst(player).y -= PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
+});
 
 onInput("a", () => {
-  getFirst(player).x -= PLAYER_WALK_SPEED;
-})
+  getFirst(player).x -= PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
+});
 
 onInput("s", () => {
-  getFirst(player).y += PLAYER_WALK_SPEED;
-})
+  getFirst(player).y += PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
+});
 
 onInput("d", () => {
-  getFirst(player).x += PLAYER_WALK_SPEED;
-})
+  getFirst(player).x += PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
+});
+
+onInput("i", () => {
+  //addSprite(getFirst(player).x, getFirst(player).y+1, bullet);
+  addSprite(getFirst(player).x, getFirst(player).y-1, bullet);
+  getFirst(bullet).dx = 0;
+  getFirst(bullet).dy = -1;
+});
+
+setInterval(() => {
+  tilesWith(bullet).forEach(bullet => {
+    bullet.x += bullet.dx || 0;
+    bullet.y += bullet.dy || 0;
+    if (bullet.x < 0 || bullet.y < 0 || bullet.x >= getMapWidth() || bullet.y >= getMapHeight()) {
+      bullet.remove();
+    }
+  });
+}, 100);
+
 
 afterInput(() => {
-  //setMap(trimMap(actualMap));
-})
+});
