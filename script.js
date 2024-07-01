@@ -1,3 +1,8 @@
+// helpers
+function getRandomInt(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
 const player = "p";
 const grassEnd = "e";
 const grass = "g";
@@ -7,28 +12,130 @@ const houseTopLeft = "[";
 const houseTopRight = "]";
 const houseBottomLeft = "{";
 const houseBottomRight = "}";
-const bullet = "b";
+const bulletRight = ">";
+const bulletLeft = "<";
+const bulletUp = "^";
+const bulletDown = "v";
+const ghoulLeft = "h";
+const ghoulRight = "o";
+
+const bulletVels = {
+  ">": [1, 0],
+  "<": [-1, 0],
+  "^": [0, -1],
+  "v": [0, 1]
+};
 
 const PLAYER_WALK_SPEED = 1;
 
+let canShootBullet = true;
+
+let ghoulCounterMax = 50; // We won't const this because we will change this
+let ghoulCounter = 0;
+
 setLegend(
-  [bullet, bitmap`
+  [bulletRight, bitmap`
 ................
 ................
 ................
 ................
-..0000000000....
-.066F666C6220...
-.066C666C66220..
+................
+................
+.00000000000000.
+.066C666C666260.
 .066C666C666660.
-.066C666C666660.
-.066C666C66660..
-.066C666F6660...
-..0000000000....
+.00000000000000.
+................
+................
 ................
 ................
 ................
 ................`],
+  [bulletLeft, bitmap`
+................
+................
+................
+................
+................
+................
+.00000000000000.
+.062666C666C660.
+.066666C666C660.
+.00000000000000.
+................
+................
+................
+................
+................
+................`], // bullet left
+  [bulletUp, bitmap`
+................
+......0000......
+......0660......
+......0620......
+......0660......
+......0660......
+......0660......
+......0CC0......
+......0660......
+......0660......
+......0660......
+......0CC0......
+......0660......
+......0660......
+......0000......
+................`],
+  [bulletDown, bitmap`
+................
+......0000......
+......0660......
+......0660......
+......0CC0......
+......0660......
+......0660......
+......0660......
+......0CC0......
+......0660......
+......0660......
+......0660......
+......0260......
+......0660......
+......0000......
+................`],
+  [ghoulLeft, bitmap`
+....11111.......
+...1222221......
+..122222221.....
+..1222222221....
+..1202202221....
+.12222222221....
+.12222222221....
+.12222222221....
+.122222222221...
+.122222200221...
+..12222222221...
+..12222111221...
+..121121.11221..
+..121.11..1121..
+...11..11..111..
+....11..........`],
+  [ghoulRight, bitmap`
+.......11111....
+......1222221...
+.....122222221..
+....1222222221..
+....1222022021..
+....12222222221.
+....12222222221.
+....12222222221.
+...122222222221.
+...122002222221.
+...12222222221..
+...12211122221..
+..12211.121121..
+..1211..11.121..
+..111..11..11...
+..........11....`],
   [player, bitmap`
 ................
 ................
@@ -190,17 +297,18 @@ setSolids([player]);
 
 let level = 0;
 const levels = [
-    map`
-ggggggg
-gg[]gtg
-gg{}ggt
-tgffggg
-ggpgggg
-eeeeeee`
+  map`
+gggggggg
+gg[]gtgg
+gg{}ggtg
+tgffgggg
+ggpggggg
+gggggggg
+eeeeeeee`
 ];
 
 function getMapWidth() {
-  return levels[level].split("\n")[0].length;
+  return levels[level].split("\n")[1].length;
 }
 
 function getMapHeight() {
@@ -230,22 +338,88 @@ onInput("d", () => {
 });
 
 onInput("i", () => {
-  //addSprite(getFirst(player).x, getFirst(player).y+1, bullet);
-  addSprite(getFirst(player).x, getFirst(player).y-1, bullet);
-  getFirst(bullet).dx = 0;
-  getFirst(bullet).dy = -1;
+  if(canShootBullet){
+    addSprite(getFirst(player).x, getFirst(player).y - 1, bulletUp);
+    canShootBullet = false;
+  }
 });
 
-setInterval(() => {
-  tilesWith(bullet).forEach(bullet => {
-    bullet.x += bullet.dx || 0;
-    bullet.y += bullet.dy || 0;
-    if (bullet.x < 0 || bullet.y < 0 || bullet.x >= getMapWidth() || bullet.y >= getMapHeight()) {
-      bullet.remove();
-    }
+onInput("j", () => {
+  if(canShootBullet){
+    addSprite(getFirst(player).x - 1, getFirst(player).y, bulletLeft);
+    canShootBullet = false;
+  }
+});
+
+onInput("k", () => {
+  if(canShootBullet){
+    addSprite(getFirst(player).x, getFirst(player).y + 1, bulletDown);
+    canShootBullet = false;
+  }
+});
+
+onInput("l", () => {
+  if(canShootBullet){
+    addSprite(getFirst(player).x + 1, getFirst(player).y, bulletRight);
+    canShootBullet = false;
+  }
+});
+
+// Function to handle bullet movement
+function moveBullets(bulletType) {
+  getAll(bulletType).forEach((bullet) => {
+    bullet.x += bulletVels[bulletType][0];
+    bullet.y += bulletVels[bulletType][1];
+
+    if (bullet.y <= 0 && bulletType == "^") bullet.remove();
+    if (bullet.y >= getMapHeight() - 2 && bulletType == "v") bullet.remove();
+    if (bullet.x <= 0 && bulletType == "<") bullet.remove();
+    if (bullet.x >= getMapWidth() - 1 && bulletType == ">") bullet.remove();
+
+    console.log(bullet.y);
   });
+}
+
+// Bullet logic
+setInterval(() => {
+  moveBullets(bulletLeft);
+  moveBullets(bulletRight);
+  moveBullets(bulletUp);
+  moveBullets(bulletDown);
 }, 100);
 
+// shoot interval
+setInterval(() => {
+  canShootBullet = true;
+}, 300);
 
-afterInput(() => {
-});
+// Interval for misc things
+setInterval(() => {
+  if(!canShootBullet){
+    addText("reloading");
+  }else {
+    clearText();
+  }
+
+  // Monster spawner timer, I decided to stop creating random new timers now
+  ghoulCounter++;
+  if(ghoulCounter > ghoulCounterMax) {
+    ghoulCounter = 0;
+    let randomX = Math.floor(Math.random()*getMapWidth()-2);
+    while(randomX === getFirst(player).x) {
+      randomX = Math.floor(Math.random()*getMapWidth()-2);
+    }
+    let randomY = Math.floor((Math.random()*getMapHeight()-2));
+    while(randomY === getFirst(player).y) {
+      randomY = Math.floor((Math.random()*getMapHeight()-2));
+    }
+    if(getFirst(player).x-randomX > 0) {
+        addSprite(randomX, randomY, ghoulRight);
+    }else{
+      addSprite(randomX, randomY, ghoulLeft);
+    }
+    ghoulCounterMax += getRandomInt(-5, 15); // add some randomness, give more weight to increase since we dont want the player to die as soon as they spawn
+  }
+}, 100);
+
+afterInput(() => {});
