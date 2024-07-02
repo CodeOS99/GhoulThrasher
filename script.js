@@ -441,37 +441,37 @@ setInterval(() => {
   }
 }, 100);
 
-function yCoordMotionEnemy(enemyType) {
+function xAndYCoordMotionEnemy(enemyType) {
   getAll(enemyType).forEach(enemy => {
     let playerX = getFirst(player).x;
     let playerY = getFirst(player).y;
-    if(playerX === enemy.x) { // If the x is the same, there is no choice
+    if(playerX === enemy.x) {
       if(playerY > enemy.y) enemy.y ++;
       else if(playerY < enemy.y) enemy.y--;
       else if(playerY === enemy.y) console.log("player dead");
-    }
-  })
-}
-
-function xCoordMotionEnemy(enemyType) {
-  getAll(enemyType).forEach(enemy => {
-    let playerX = getFirst(player).x;
-    let playerY = getFirst(player).y;
-    if(playerY === enemy.y) { // If the x is the same, there is no choice
+    } else if(playerY === enemy.y) {
       if(playerX > enemy.x) enemy.x ++;
       else if(playerX < enemy.x) enemy.x--;
       else if(playerX === enemy.x) console.log("player dead");
+    } else {
+      let xOrY = getRandomInt(0, 1);
+      if(xOrY === 0) {
+        if(playerX > enemy.x) enemy.x ++;
+        else if(playerX < enemy.x) enemy.x--;
+        else if(playerX === enemy.x) console.log("player dead");
+      } else {
+        if(playerY > enemy.y) enemy.y ++;
+        else if(playerY < enemy.y) enemy.y--;
+        else if(playerY === enemy.y) console.log("player dead");
+      }
     }
   })
 }
 
 // Ghoul interval
 setInterval(() => {
-  yCoordMotionEnemy(ghoulLeft);
-  yCoordMotionEnemy(ghoulRight);
-
-  xCoordMotionEnemy(ghoulLeft);
-  xCoordMotionEnemy(ghoulRight);
+  xAndYCoordMotionEnemy(ghoulLeft);
+  xAndYCoordMotionEnemy(ghoulRight);
 }, 400);
 
 afterInput(() => {});
