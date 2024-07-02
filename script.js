@@ -1,10 +1,9 @@
 // helpers
 function getRandomInt(min, max) {
-    return Math.random() * (max - min) + min;
+   return Math.floor(Math.random() * (max - min + 1) ) + min;
 }
 
 const player = "p";
-const grassEnd = "e";
 const grass = "g";
 const fadingGrass = "f";
 const tombstone = "t";
@@ -18,6 +17,7 @@ const bulletUp = "^";
 const bulletDown = "v";
 const ghoulLeft = "h";
 const ghoulRight = "o";
+const wall = "w";
 
 const bulletVels = {
   ">": [1, 0],
@@ -34,6 +34,23 @@ let ghoulCounterMax = 50; // We won't const this because we will change this
 let ghoulCounter = 0;
 
 setLegend(
+  [wall, bitmap`
+0000000000000000
+0L11011101110120
+0L11011101110110
+0L11011101110110
+0000000000000000
+0L10111011101110
+0L10111011101110
+0L10111011101110
+0000000000000000
+0L11011101110110
+0L11011101110110
+0LL1011101110110
+0000000000000000
+0LL0L11011101110
+0LL0LLL011101110
+0000000000000000`],
   [bulletRight, bitmap`
 ................
 ................
@@ -153,23 +170,6 @@ setLegend(
 ......0.0.......
 .....00.00......
 ................`],
-  [grassEnd, bitmap`
-4444444444444444
-4444444444444444
-4444444444444444
-4444444444444444
-DDDDDDDDDDDDDDDD
-DDDDDDDDDDDDDDDD
-DDDDDDDDDDDDDDDD
-DDDDDDDDDDDDDDDD
-DDDDDDDDDDDDDDDD
-DDDDDDDDDDDDDDDD
-DDDDDDDDDDDDDDDD
-DDDDDDDDDDDDDDDD
-DDDDDDDDDDDDDDDD
-DDDDDDDDDDDDDDDD
-DDDDDDDDDDDDDDDD
-CCCCCCCCCCCCCCCC`],
   [grass, bitmap`
 4444444444444444
 4444444444444444
@@ -293,22 +293,22 @@ L10CCCCCCCCC0DDD
 
 setBackground(grass);
 
-setSolids([player]);
+setSolids([player, wall]);
 
 let level = 0;
 const levels = [
   map`
-gggggggg
-gg[]gtgg
-gg{}ggtg
-tgffgggg
-ggpggggg
-gggggggg
-eeeeeeee`
+wwwwwwww
+wg[]gtgw
+wg{}ggtw
+wgffgggw
+wgpggggw
+wggggggw
+wwwwwwww`
 ];
 
 function getMapWidth() {
-  return levels[level].split("\n")[1].length;
+  return levels[level].trim().split("\n")[0].length;
 }
 
 function getMapHeight() {
@@ -341,6 +341,8 @@ onInput("i", () => {
   if(canShootBullet){
     addSprite(getFirst(player).x, getFirst(player).y - 1, bulletUp);
     canShootBullet = false;
+    bulletEnemyKill(bulletUp, ghoulLeft);
+    bulletEnemyKill(bulletUp, ghoulRight);
   }
 });
 
@@ -348,6 +350,8 @@ onInput("j", () => {
   if(canShootBullet){
     addSprite(getFirst(player).x - 1, getFirst(player).y, bulletLeft);
     canShootBullet = false;
+    bulletEnemyKill(bulletLeft, ghoulLeft);
+    bulletEnemyKill(bulletLeft, ghoulRight);
   }
 });
 
@@ -355,6 +359,8 @@ onInput("k", () => {
   if(canShootBullet){
     addSprite(getFirst(player).x, getFirst(player).y + 1, bulletDown);
     canShootBullet = false;
+    bulletEnemyKill(bulletDown, ghoulLeft);
+    bulletEnemyKill(bulletDown, ghoulRight);
   }
 });
 
@@ -362,8 +368,18 @@ onInput("l", () => {
   if(canShootBullet){
     addSprite(getFirst(player).x + 1, getFirst(player).y, bulletRight);
     canShootBullet = false;
+    bulletEnemyKill(bulletRight, ghoulLeft);
+    bulletEnemyKill(bulletRight, ghoulRight);
   }
 });
+
+function bulletEnemyKill(bulletType, enemyType) {
+  tilesWith(enemyType, bulletType).forEach(enemyAndBullet => {
+    enemyAndBullet.forEach((sprite) => {
+      if(sprite._type === bulletType || sprite._type === enemyType) sprite.remove();
+    });
+  });
+}
 
 // Function to handle bullet movement
 function moveBullets(bulletType) {
@@ -375,9 +391,10 @@ function moveBullets(bulletType) {
     if (bullet.y >= getMapHeight() - 2 && bulletType == "v") bullet.remove();
     if (bullet.x <= 0 && bulletType == "<") bullet.remove();
     if (bullet.x >= getMapWidth() - 1 && bulletType == ">") bullet.remove();
-
-    console.log(bullet.y);
   });
+
+  bulletEnemyKill(bulletType, ghoulLeft);
+  bulletEnemyKill(bulletType, ghoulRight);
 }
 
 // Bullet logic
@@ -405,21 +422,56 @@ setInterval(() => {
   ghoulCounter++;
   if(ghoulCounter > ghoulCounterMax) {
     ghoulCounter = 0;
-    let randomX = Math.floor(Math.random()*getMapWidth()-2);
+    let randomX = getRandomInt(1, getMapWidth()-3);
     while(randomX === getFirst(player).x) {
-      randomX = Math.floor(Math.random()*getMapWidth()-2);
+      randomX = getRandomInt(1, getMapWidth()-3);
     }
-    let randomY = Math.floor((Math.random()*getMapHeight()-2));
+    let randomY = getRandomInt(1, getMapHeight()-3);
     while(randomY === getFirst(player).y) {
-      randomY = Math.floor((Math.random()*getMapHeight()-2));
+      randomY = getRandomInt(1, getMapHeight()-3);
     }
     if(getFirst(player).x-randomX > 0) {
         addSprite(randomX, randomY, ghoulRight);
     }else{
       addSprite(randomX, randomY, ghoulLeft);
     }
+    //console.log(`${randomX}, ${randomY}`);
     ghoulCounterMax += getRandomInt(-5, 15); // add some randomness, give more weight to increase since we dont want the player to die as soon as they spawn
+    //ghoulCounterMax += 1000;
   }
 }, 100);
+
+function yCoordMotionEnemy(enemyType) {
+  getAll(enemyType).forEach(enemy => {
+    let playerX = getFirst(player).x;
+    let playerY = getFirst(player).y;
+    if(playerX === enemy.x) { // If the x is the same, there is no choice
+      if(playerY > enemy.y) enemy.y ++;
+      else if(playerY < enemy.y) enemy.y--;
+      else if(playerY === enemy.y) console.log("player dead");
+    }
+  })
+}
+
+function xCoordMotionEnemy(enemyType) {
+  getAll(enemyType).forEach(enemy => {
+    let playerX = getFirst(player).x;
+    let playerY = getFirst(player).y;
+    if(playerY === enemy.y) { // If the x is the same, there is no choice
+      if(playerX > enemy.x) enemy.x ++;
+      else if(playerX < enemy.x) enemy.x--;
+      else if(playerX === enemy.x) console.log("player dead");
+    }
+  })
+}
+
+// Ghoul interval
+setInterval(() => {
+  yCoordMotionEnemy(ghoulLeft);
+  yCoordMotionEnemy(ghoulRight);
+
+  xCoordMotionEnemy(ghoulLeft);
+  xCoordMotionEnemy(ghoulRight);
+}, 400);
 
 afterInput(() => {});
