@@ -29,6 +29,8 @@ const sleepyGhoul = "s";
 const wall = "w";
 const flower1 = "l";
 const flower2 = "m";
+const blood = "b";
+const goldenTomb = "e";
 
 const bulletVels = {
   ">": [1, 0],
@@ -41,6 +43,9 @@ const enemies = [
   ghoulLeft, ghoulRight,
   sleepyGhoul
 ];
+
+const initI = 1;
+const initJ = 2;
 
 const PLAYER_WALK_SPEED = 1;
 
@@ -55,7 +60,27 @@ let difficultyGhoulSpawn = 0;
 let sleepyGhoulCounterMax = 70; // slightly longer than ghoul counter max
 let sleepyGhoulCounter = 0;
 
+// have text?(needed for clearText shenanigins in afterMovement in room 0, 1
+let texts = [];
+
 setLegend(
+  [goldenTomb, bitmap`
+4444444444444444
+4444446666644444
+444446LLLLL64444
+444446L111L64444
+44446LL111LL6444
+44446L11111L6444
+4446LL11111LL644
+4446L1155511L644
+4446L1111111L644
+4446L1155511L644
+4446L1111111L644
+4446LLLLLLLLL644
+446L111111111L64
+446L6LLLLLLLLL64
+4466666666666664
+4444444444444444`],
   [doorLeft, bitmap`
 0000000000000000
 0000000000000000
@@ -429,17 +454,84 @@ L10CCCCCCCCC0DDD
 44444D9D44444444
 444444D444444444
 4444444444444444
-4444444444444444`]
+4444444444444444`],
+  [blood, bitmap`
+4444444444444444
+4444444444444444
+4444444444444484
+4444334444444444
+4444334444444444
+4443434444448844
+4434444444448848
+4433444494448448
+4334444449448884
+4444444449444444
+4444444444944444
+4444444444944444
+4444444444494444
+4444444444494444
+4444444444449444
+4444444444444944`],
 );
 
 setBackground(grass);
 
 setSolids([player, wall]);
 
-let levelI = 0;
-let levelJ = 0;
+let levelI = initI;
+let levelJ = initJ;
 const levels = [
+  [map``,
+  map`
+wwwwwwwwww
+wggggggggw
+wgwwwwwggw
+wgwgwggggw
+;ggggwwwgw
+;ggwgggww:
+wwwwggggp:
+wggggggwgw
+wgwwwwwwgw
+wggggggggw
+wwww""wwww`],
+  [map``,
+  map`
+wwwwwwww'w
+wggggwggpw
+wgwggwgwgw
+wgwwwwgwgw
+wgwggwgwgw
+;ggggwgwgw
+wwwggggwgw
+wgwggggwgw
+wgwgwwwwgw
+wggggggggw
+www"wwwwww`], // first one is just a placeholder
   [map`
+wwwwwwwwww
+wgggwggggw
+wgwgwwwggw
+wgwwwggggw
+wgggggwgp:
+wggwwwwgg:
+wwgwggwwww
+wggwgggggw
+wgwwggwggw
+wgwgggwggw
+wwww""w""w`,
+   map`
+wwwwwwwwww
+wggggggggw
+wgwwwwwggw
+wgwgwggggw
+;ggggwwwgw
+;ggwgggww:
+wwwwggggp:
+wggggggwgw
+wgwwwwwwgw
+wggggggggw
+wwww""wwww`,
+   map`
 wwww'wwww
 wl[]gtgmw
 wg{}ggtgw
@@ -451,10 +543,10 @@ wwww"wwww`,
 wwwwwwwww
 wgggggggw
 wggmggggw
-;pggggggw
+;pggbgggw
 wmggggggw
-wgggggglw
-wwwwwwwww`]
+wbggggblw
+wwwwwwwww`],
 ];
 
 function getMapWidth() {
@@ -591,30 +683,40 @@ function manageGhoulSpawns() {
 }
 
 function manageSleepyGhoulSpawns() {
-  sleepyGhoulCounter++;
-  console.log(sleepyGhoulCounter, sleepyGhoulCounterMax);
-  if(sleepyGhoulCounter > sleepyGhoulCounterMax) {
-    sleepyGhoulCounter = 0;
-    let randomX = getRandomInt(1, getMapWidth()-3);
-    while(randomX === getFirst(player).x) {
-      randomX = getRandomInt(1, getMapWidth()-3);
+  if(levelI !== 0 || levelJ !== 0){
+    sleepyGhoulCounter++;
+    if(sleepyGhoulCounter > sleepyGhoulCounterMax) {
+      sleepyGhoulCounter = 0;
+      let randomX = getRandomInt(1, getMapWidth()-3);
+      while(randomX === getFirst(player).x) {
+        randomX = getRandomInt(1, getMapWidth()-3);
+      }
+      let randomY = getRandomInt(1, getMapHeight()-3);
+      while(randomY === getFirst(player).y) {
+        randomY = getRandomInt(1, getMapHeight()-3);
+      }
+      addSprite(randomX, randomY, sleepyGhoul);
+      //console.log(`${randomX}, ${randomY}`);
+      //sleepyGhoulCounterMax += 1000;
     }
-    let randomY = getRandomInt(1, getMapHeight()-3);
-    while(randomY === getFirst(player).y) {
-      randomY = getRandomInt(1, getMapHeight()-3);
-    }
-    addSprite(randomX, randomY, sleepyGhoul);
-    //console.log(`${randomX}, ${randomY}`);
-    //sleepyGhoulCounterMax += 1000;
   }
+}
+
+function refreshText() {
+  clearText();
+  texts.forEach(text => {
+    addText(text[0], text[1]);
+  });
 }
 
 // Interval for misc things
 setInterval(() => {
   if(!canShootBullet){
     addText("reloading");
+    texts.push(["reloading", {}]);
   }else {
-    clearText();
+    texts = texts.filter(n => n[0]!=="reloading");
+    refreshText();
   }
 
   // Monster spawner timer, I decided to stop creating random new timers now
@@ -686,6 +788,7 @@ setInterval(() => {
 
 let di = 0;
 let dj = 0;
+let shownText = false;
 afterInput(() => {
   // Player collisions
   if(tilesWith(player, doorLeft).length !== 0) {
@@ -701,7 +804,7 @@ afterInput(() => {
   levelJ += dj;
   if(di !== 0 || dj !== 0) {
     setMap(levels[levelI][levelJ]);
-    if(levelI === 0 && levelJ === 0) { // player just entered the starting room again
+    if(levelI === initI && levelJ === initJ) { // player just entered the starting room again
       if(di === -1) { // went down, so spawn on up
         getFirst(player).x = 4;
         getFirst(player).y = 1;
@@ -720,4 +823,21 @@ afterInput(() => {
   
   di = 0;
   dj = 0;
+  if(levelI === initI && levelJ === initJ+1) {
+    if(!shownText){
+      let options = {y:15,color:color`3`};
+      addText("Meet some friends", options);
+      texts.push(["Meet some friends", options]);
+      shownText = true;
+    } else {
+      let options = {y:15,color:color`3`};
+      addText("The Butchery", options);
+      texts.push(["The Butchery", options]);
+    }
+  } else {
+    //clearText();
+    texts = texts.filter(n => n[0] !== "Meet some friends" && n[0] !== "The Butchery");
+    console.log(texts);
+    refreshText();
+  }
 });
