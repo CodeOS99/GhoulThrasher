@@ -1,8 +1,16 @@
+/*
+
+*/
+
 // helpers
 function getRandomInt(min, max) {
    return Math.floor(Math.random() * (max - min + 1) ) + min;
 }
 
+const doorLeft = ";";
+const doorRight = ":";
+const doorUp = "\'";
+const doorDown = "\"";
 const player = "p";
 const grass = "g";
 const fadingGrass = "f";
@@ -17,7 +25,10 @@ const bulletUp = "^";
 const bulletDown = "v";
 const ghoulLeft = "h";
 const ghoulRight = "o";
+const sleepyGhoul = "s";
 const wall = "w";
+const flower1 = "l";
+const flower2 = "m";
 
 const bulletVels = {
   ">": [1, 0],
@@ -26,6 +37,11 @@ const bulletVels = {
   "v": [0, 1]
 };
 
+const enemies = [
+  ghoulLeft, ghoulRight,
+  sleepyGhoul
+];
+
 const PLAYER_WALK_SPEED = 1;
 
 let canShootBullet = true;
@@ -33,7 +49,81 @@ let canShootBullet = true;
 let ghoulCounterMax = 50; // We won't const this because we will change this
 let ghoulCounter = 0;
 
+let ghoulDifficultyIncreaser = 0;
+let difficultyGhoulSpawn = 0;
+
+let sleepyGhoulCounterMax = 70; // slightly longer than ghoul counter max
+let sleepyGhoulCounter = 0;
+
 setLegend(
+  [doorLeft, bitmap`
+0000000000000000
+0000000000000000
+0000660000000000
+0006660000000000
+0066660000000000
+0666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+0666660000000000
+0066660000000000
+0006660000000000
+0000660000000000
+0000000000000000
+0000000000000000`],
+  [doorRight, bitmap`
+0000000000000000
+0000000000000000
+0000000000660000
+0000000000666000
+0000000000666600
+6666666666666660
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+0000000000666660
+0000000000666600
+0000000000666000
+0000000000660000
+0000000000000000
+0000000000000000`],
+  [doorUp, bitmap`
+0000006666000000
+0000066666600000
+0000666666660000
+0006666666666000
+0066666666666600
+0066666666666600
+0000006666600000
+0000006666600000
+0000006666600000
+0000006666600000
+0000006666600000
+0000006666600000
+0000006666600000
+0000006666600000
+0000006666600000
+0000006666600000`],
+  [doorDown, bitmap`
+0000006666600000
+0000006666600000
+0000006666600000
+0000006666600000
+0000006666600000
+0000006666600000
+0000006666600000
+0000006666600000
+0000006666600000
+0000006666600000
+0066666666666600
+0066666666666600
+0006666666666000
+0000666666660000
+0000066666600000
+0000006666000000`],
   [wall, bitmap`
 0000000000000000
 0L11011101110120
@@ -124,12 +214,12 @@ setLegend(
 ...1222221......
 ..122222221.....
 ..1222222221....
-..1202202221....
+..1232232221....
 .12222222221....
 .12222222221....
 .12222222221....
-.122222222221...
-.122222200221...
+.122222222921...
+.122222299221...
 ..12222222221...
 ..12222111221...
 ..121121.11221..
@@ -141,18 +231,35 @@ setLegend(
 ......1222221...
 .....122222221..
 ....1222222221..
-....1222022021..
+....1222322321..
 ....12222222221.
 ....12222222221.
 ....12222222221.
-...122222222221.
-...122002222221.
+...129222222221.
+...122992222221.
 ...12222222221..
 ...12211122221..
 ..12211.121121..
 ..1211..11.121..
 ..111..11..11...
 ..........11....`],
+  [sleepyGhoul, bitmap`
+..........666666
+.....111111...6.
+....12222221.6..
+....122222266...
+...1222222666666
+...1200220021...
+..122222222221..
+..122222222221..
+..122222222221..
+..122222222221..
+..122000000221..
+..122722222221..
+..122222122221..
+..121221.11111..
+..11.111.1..11..
+...1..1.....1...`],
   [player, bitmap`
 ................
 ................
@@ -288,34 +395,77 @@ DDD0CCCCCCCCC011
 L10CCCCCCCCC0DDD
 110CCCCCCCCC0DDD
 000CCCCCCCCC04D4
-0000000000000444`]
+0000000000000444`],
+  [flower1, bitmap`
+4444444444444444
+441144444444D444
+4411444444444444
+226624444443D444
+2166444444433444
+442L44444D4DD444
+4422444444444D44
+44C44444444C4C44
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444754
+4444444444447994`],
+  [flower2, bitmap`
+4444444444444444
+4444444444444444
+4446F44444444444
+444FF44444444L44
+46FCCF644444L444
+466CC6F4444LHL44
+444FF4444444LCC4
+444F6444444C4444
+4444444444444444
+4444444444444444
+4444444444444444
+444444D144444444
+44444D9D44444444
+444444D444444444
+4444444444444444
+4444444444444444`]
 );
 
 setBackground(grass);
 
 setSolids([player, wall]);
 
-let level = 0;
+let levelI = 0;
+let levelJ = 0;
 const levels = [
-  map`
-wwwwwwww
-wg[]gtgw
-wg{}ggtw
-wgffgggw
-wgpggggw
-wggggggw
-wwwwwwww`
+  [map`
+wwww'wwww
+wl[]gtgmw
+wg{}ggtgw
+;gffpmgg:
+wggggggtw
+wmggggglw
+wwww"wwww`,
+   map`
+wwwwwwwww
+wgggggggw
+wggmggggw
+;pggggggw
+wmggggggw
+wgggggglw
+wwwwwwwww`]
 ];
 
 function getMapWidth() {
-  return levels[level].trim().split("\n")[0].length;
+  return levels[levelI][levelJ].trim().split("\n")[0].length;
 }
 
 function getMapHeight() {
-  return levels[level].split("\n").length;
+  return levels[levelI][levelJ].split("\n").length;
 }
 
-setMap(levels[level]);
+setMap(levels[levelI][levelJ]);
 
 setPushables({
   [player]: []
@@ -341,8 +491,7 @@ onInput("i", () => {
   if(canShootBullet){
     addSprite(getFirst(player).x, getFirst(player).y - 1, bulletUp);
     canShootBullet = false;
-    bulletEnemyKill(bulletUp, ghoulLeft);
-    bulletEnemyKill(bulletUp, ghoulRight);
+    checkBulletEnemyKillAll(bulletUp);
   }
 });
 
@@ -350,8 +499,7 @@ onInput("j", () => {
   if(canShootBullet){
     addSprite(getFirst(player).x - 1, getFirst(player).y, bulletLeft);
     canShootBullet = false;
-    bulletEnemyKill(bulletLeft, ghoulLeft);
-    bulletEnemyKill(bulletLeft, ghoulRight);
+    checkBulletEnemyKillAll(bulletLeft);
   }
 });
 
@@ -359,8 +507,8 @@ onInput("k", () => {
   if(canShootBullet){
     addSprite(getFirst(player).x, getFirst(player).y + 1, bulletDown);
     canShootBullet = false;
-    bulletEnemyKill(bulletDown, ghoulLeft);
-    bulletEnemyKill(bulletDown, ghoulRight);
+    checkBulletEnemyKillAll(bulletDown);
+
   }
 });
 
@@ -368,10 +516,13 @@ onInput("l", () => {
   if(canShootBullet){
     addSprite(getFirst(player).x + 1, getFirst(player).y, bulletRight);
     canShootBullet = false;
-    bulletEnemyKill(bulletRight, ghoulLeft);
-    bulletEnemyKill(bulletRight, ghoulRight);
+    checkBulletEnemyKillAll(bulletRight);
   }
 });
+
+function checkBulletEnemyKillAll(bulletType){
+  enemies.forEach(enemy => bulletEnemyKill(bulletType, enemy));
+}
 
 function bulletEnemyKill(bulletType, enemyType) {
   tilesWith(enemyType, bulletType).forEach(enemyAndBullet => {
@@ -410,15 +561,8 @@ setInterval(() => {
   canShootBullet = true;
 }, 300);
 
-// Interval for misc things
-setInterval(() => {
-  if(!canShootBullet){
-    addText("reloading");
-  }else {
-    clearText();
-  }
 
-  // Monster spawner timer, I decided to stop creating random new timers now
+function manageGhoulSpawns() {
   ghoulCounter++;
   if(ghoulCounter > ghoulCounterMax) {
     ghoulCounter = 0;
@@ -436,9 +580,46 @@ setInterval(() => {
       addSprite(randomX, randomY, ghoulLeft);
     }
     //console.log(`${randomX}, ${randomY}`);
-    ghoulCounterMax += getRandomInt(-5, 15); // add some randomness, give more weight to increase since we dont want the player to die as soon as they spawn
+    ghoulCounterMax += getRandomInt(-5-difficultyGhoulSpawn, 15); // add some randomness, give more weight to increase since we dont want the player to die as soon as they spawn
     //ghoulCounterMax += 1000;
+    ghoulDifficultyIncreaser ++;
+    if(ghoulDifficultyIncreaser >= 6) {
+      ghoulDifficultyIncreaser = 0;
+      difficultyGhoulSpawn += 3;
+    }
   }
+}
+
+function manageSleepyGhoulSpawns() {
+  sleepyGhoulCounter++;
+  console.log(sleepyGhoulCounter, sleepyGhoulCounterMax);
+  if(sleepyGhoulCounter > sleepyGhoulCounterMax) {
+    sleepyGhoulCounter = 0;
+    let randomX = getRandomInt(1, getMapWidth()-3);
+    while(randomX === getFirst(player).x) {
+      randomX = getRandomInt(1, getMapWidth()-3);
+    }
+    let randomY = getRandomInt(1, getMapHeight()-3);
+    while(randomY === getFirst(player).y) {
+      randomY = getRandomInt(1, getMapHeight()-3);
+    }
+    addSprite(randomX, randomY, sleepyGhoul);
+    //console.log(`${randomX}, ${randomY}`);
+    //sleepyGhoulCounterMax += 1000;
+  }
+}
+
+// Interval for misc things
+setInterval(() => {
+  if(!canShootBullet){
+    addText("reloading");
+  }else {
+    clearText();
+  }
+
+  // Monster spawner timer, I decided to stop creating random new timers now
+  manageGhoulSpawns();
+  manageSleepyGhoulSpawns();
 }, 100);
 
 function xAndYCoordMotionEnemy(enemyType) {
@@ -448,23 +629,25 @@ function xAndYCoordMotionEnemy(enemyType) {
     if(playerX === enemy.x) {
       if(playerY > enemy.y) enemy.y ++;
       else if(playerY < enemy.y) enemy.y--;
-      else if(playerY === enemy.y) console.log("player dead");
+      //else if(playerY === enemy.y) console.log("player dead");
     } else if(playerY === enemy.y) {
       if(playerX > enemy.x) enemy.x ++;
       else if(playerX < enemy.x) enemy.x--;
-      else if(playerX === enemy.x) console.log("player dead");
+      //else if(playerX === enemy.x) console.log("player dead");
     } else {
       let xOrY = getRandomInt(0, 1);
       if(xOrY === 0) {
         if(playerX > enemy.x) enemy.x ++;
         else if(playerX < enemy.x) enemy.x--;
-        else if(playerX === enemy.x) console.log("player dead");
+        //else if(playerX === enemy.x) console.log("player dead");
       } else {
         if(playerY > enemy.y) enemy.y ++;
         else if(playerY < enemy.y) enemy.y--;
-        else if(playerY === enemy.y) console.log("player dead");
+        //else if(playerY === enemy.y) console.log("player dead");
       }
     }
+    bulletEnemyKill(bulletLeft, enemyType);
+    bulletEnemyKill(bulletRight, enemyType);
   })
 }
 
@@ -474,4 +657,67 @@ setInterval(() => {
   xAndYCoordMotionEnemy(ghoulRight);
 }, 400);
 
-afterInput(() => {});
+// Sleepy ghoul interval
+setInterval(() => {
+  getAll(sleepyGhoul).forEach((currentGhoul) => {
+    let playerX = getFirst(player).x;
+    let playerY = getFirst(player).y;
+    if (playerX === currentGhoul.x) {
+      if (playerY > currentGhoul.y) {
+        currentGhoul.y++;
+        bulletEnemyKill(bulletUp, sleepyGhoul);
+      }
+      else if (playerY < currentGhoul.y) {
+        bulletEnemyKill(bulletDown, sleepyGhoul);
+        currentGhoul.y--;
+      }
+    } else if (playerY === currentGhoul.y) {
+      if (playerX > currentGhoul.x)  {
+        bulletEnemyKill(bulletLeft, sleepyGhoul);
+        currentGhoul.x++;
+      }
+      else if (playerX < currentGhoul.x) {
+        bulletEnemyKill(bulletRight, sleepyGhoul);
+        currentGhoul.x--;
+      }
+    }
+  });
+}, 100);
+
+let di = 0;
+let dj = 0;
+afterInput(() => {
+  // Player collisions
+  if(tilesWith(player, doorLeft).length !== 0) {
+    dj --;
+  } else if(tilesWith(player, doorRight).length !== 0) {
+    dj ++;
+  } else if(tilesWith(player, doorUp).length !== 0) {
+    di++;
+  } else if(tilesWith(player, doorDown).length !== 0) {
+    di--;
+  }
+  levelI += di;
+  levelJ += dj;
+  if(di !== 0 || dj !== 0) {
+    setMap(levels[levelI][levelJ]);
+    if(levelI === 0 && levelJ === 0) { // player just entered the starting room again
+      if(di === -1) { // went down, so spawn on up
+        getFirst(player).x = 4;
+        getFirst(player).y = 1;
+      } else if (di === 1) {
+        getFirst(player).x = 4;
+        getFirst(player).y = 5;
+      } else if(dj === 1) {
+        getFirst(player).x = 1;
+        getFirst(player).y = 3;
+      } else if(dj === -1) {
+        getFirst(player).x = 7;
+        getFirst(player).y = 3
+      }
+    }
+  }
+  
+  di = 0;
+  dj = 0;
+});
