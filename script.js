@@ -4,7 +4,7 @@
 
 // helpers
 function getRandomInt(min, max) {
-   return Math.floor(Math.random() * (max - min + 1) ) + min;
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 const doorLeft = ";";
@@ -32,6 +32,8 @@ const flower2 = "m";
 const blood = "b";
 const goldenTomb = "e";
 const goldenFlowers = "0";
+const skeletonLeft = "1";
+const skeletonRight = "2";
 
 const bulletVels = {
   ">": [1, 0],
@@ -42,7 +44,8 @@ const bulletVels = {
 
 const enemies = [
   ghoulLeft, ghoulRight,
-  sleepyGhoul
+  sleepyGhoul,
+  skeletonLeft, skeletonRight
 ];
 
 const initI = 3;
@@ -61,8 +64,43 @@ let difficultyGhoulSpawn = 0;
 let sleepyGhoulCounterMax = 70; // slightly longer than ghoul counter max
 let sleepyGhoulCounter = 0;
 
+let skeletonCounter = 0;
+let skeletonCounterMax = 100;
+
 // have text?(needed for clearText shenanigins in afterMovement in room 0, 1
 let texts = [];
+
+const ghoulImmuneLevels = [
+  [0, 3],
+  [1, 0],
+  [1, 1],
+  [1, 2],
+  [2, 0],
+  [2, 1],
+  [3, 0],
+  [3, 1]
+]
+const sleepyGhoulImmuneLevels = [
+  [0, 3],
+  [1, 0],
+  [1, 1],
+  [1, 2],
+  [2, 0],
+  [2, 1],
+  [3, 0],
+  [3, 1],
+  [initI, initJ]
+];
+const skeletonImmuneLevels = [
+  [0, 2],
+  [1, 0],
+  [1, 1],
+  [1, 2],
+  [2, 0][2, 1],
+  [3, 0],
+  [3, 1],
+  [initI, initJ]
+];
 
 setLegend(
   [goldenTomb, bitmap`
@@ -235,6 +273,40 @@ setLegend(
 ......0660......
 ......0000......
 ................`],
+  [skeletonLeft, bitmap`
+......1111......
+.....122221.....
+....120202L1....
+..C.122222L1....
+.C2.102222L1....
+C.2.12222LL1....
+C.2..111111.....
+C.2.122222L1....
+C.2.122222L1....
+C.211111111111..
+C.2112222LL111..
+C.2.1222LLL1....
+.C2.11111111....
+..C..11..11.....
+.....11..11.....
+.....11..11.....`],
+  [skeletonRight, bitmap`
+......1111......
+.....122221.....
+....1L202021....
+....1L222221.C..
+....1L222201.2C.
+....1LL22221.2.C
+.....111111..2.C
+....1L222221.2.C
+....1L222221.2.C
+..111111111112.C
+..111LL2222112.C
+....1LLL2221.2.C
+....11111111.2C.
+.....11..11..C..
+.....11..11.....
+.....11..11.....`],
   [ghoulLeft, bitmap`
 ....11111.......
 ...1222221......
@@ -499,12 +571,15 @@ setSolids([player, wall]);
 let levelI = initI;
 let levelJ = initJ;
 const levels = [
-  ['','',map`
+  ['',
+    '',
+    map`
 w'www
 wp[]w
 wl{}w
 wmffw
-wwwww`],
+wwwww`
+  ], // maze
   [map`
 wwwwwwww'w
 w0000000pw
@@ -516,8 +591,8 @@ w00000000w
 w00000000w
 w00000000w
 w00000000w
-wwwwwwwwww`,
-   map`
+wwwwwwwwww`, // mase
+    map`
 wwww''wwww
 wggggpgggw
 wttttttttw
@@ -528,7 +603,7 @@ wttttttttw
 wttttttttw
 wttttttttw
 wttttttttw
-wwwwwwwwww`,
+wwwwwwwwww`, // mase
     map`
 wwwwwwwwww
 wggggwgggw
@@ -540,7 +615,8 @@ wwwggggwgw
 wgwggggwgw
 wgwgwwwwgw
 wggggggggw
-www"wwwwww`,],
+www"wwwwww`,
+  ], // mase
   [map`
 wwwwwwwwww
 wgwggwgggw
@@ -552,8 +628,8 @@ wggwggwggw
 wggwwwwggw
 wwwwggwggw
 wwgggggggw
-www""wwwww`,
-  map`
+www""wwwww`, // maze
+    map`
 wwwwwwww'w
 wggggwggpw
 wgwggwgwgw
@@ -564,7 +640,8 @@ wwwggggwgw
 wgwggggwgw
 wgwgwwwwgw
 wggggggggw
-www"wwwwww`], // first one is just a placeholder
+www"wwwwww`
+  ], // maze
   [map`
 wwwwwwwwww
 wgggwggggw
@@ -576,8 +653,8 @@ wwgwggwwww
 wggwgggggw
 wgwwggwggw
 wgwgggwggw
-wwww""w""w`,
-   map`
+wwww""w""w`, // mase
+    map`
 wwwwwwwwww
 wggggggggw
 wgwwwwwggw
@@ -588,8 +665,8 @@ wwwwggggp:
 wggggggwgw
 wgwwwwwwgw
 wggggggggw
-wwww""wwww`,
-   map`
+wwww""wwww`, // maze
+    map`
 wwww'wwww
 wl[]gtgmw
 wg{}ggtgw
@@ -597,14 +674,15 @@ wg{}ggtgw
 wggggggtw
 wmggggglw
 wwww"wwww`,
-   map`
+    map`
 wwwwwwwww
 wgggggggw
 wggmggggw
 ;pggbgggw
 wmggggggw
 wbggggblw
-wwwwwwwww`],
+wwwwwwwww`
+  ],
 ];
 
 function getMapWidth() {
@@ -638,7 +716,7 @@ onInput("d", () => {
 });
 
 onInput("i", () => {
-  if(canShootBullet){
+  if (canShootBullet) {
     addSprite(getFirst(player).x, getFirst(player).y - 1, bulletUp);
     canShootBullet = false;
     checkBulletEnemyKillAll(bulletUp);
@@ -646,7 +724,7 @@ onInput("i", () => {
 });
 
 onInput("j", () => {
-  if(canShootBullet){
+  if (canShootBullet) {
     addSprite(getFirst(player).x - 1, getFirst(player).y, bulletLeft);
     canShootBullet = false;
     checkBulletEnemyKillAll(bulletLeft);
@@ -654,7 +732,7 @@ onInput("j", () => {
 });
 
 onInput("k", () => {
-  if(canShootBullet){
+  if (canShootBullet) {
     addSprite(getFirst(player).x, getFirst(player).y + 1, bulletDown);
     canShootBullet = false;
     checkBulletEnemyKillAll(bulletDown);
@@ -663,21 +741,21 @@ onInput("k", () => {
 });
 
 onInput("l", () => {
-  if(canShootBullet){
+  if (canShootBullet) {
     addSprite(getFirst(player).x + 1, getFirst(player).y, bulletRight);
     canShootBullet = false;
     checkBulletEnemyKillAll(bulletRight);
   }
 });
 
-function checkBulletEnemyKillAll(bulletType){
+function checkBulletEnemyKillAll(bulletType) {
   enemies.forEach(enemy => bulletEnemyKill(bulletType, enemy));
 }
 
 function bulletEnemyKill(bulletType, enemyType) {
   tilesWith(enemyType, bulletType).forEach(enemyAndBullet => {
     enemyAndBullet.forEach((sprite) => {
-      if(sprite._type === bulletType || sprite._type === enemyType) sprite.remove();
+      if (sprite._type === bulletType || sprite._type === enemyType) sprite.remove();
     });
   });
 }
@@ -694,8 +772,7 @@ function moveBullets(bulletType) {
     if (bullet.x >= getMapWidth() - 1 && bulletType == ">") bullet.remove();
   });
 
-  bulletEnemyKill(bulletType, ghoulLeft);
-  bulletEnemyKill(bulletType, ghoulRight);
+  checkBulletEnemyKillAll();
 }
 
 // Bullet logic
@@ -711,49 +788,104 @@ setInterval(() => {
   canShootBullet = true;
 }, 300);
 
+function getValidRandomCoords() {
+  let randomX = getRandomInt(1, getMapWidth() - 3);
+  while (randomX === getFirst(player).x) {
+    randomX = getRandomInt(1, getMapWidth() - 3);
+  }
+  let randomY = getRandomInt(1, getMapHeight() - 3);
+  while (randomY === getFirst(player).y) {
+    randomY = getRandomInt(1, getMapHeight() - 3);
+  }
+
+  if (getFirst(player).x - randomX > 0) {
+    return [randomX, randomY, "right"]
+  } else {
+    return [randomX, randomY, "left"]
+  }
+  
+}
 
 function manageGhoulSpawns() {
-  ghoulCounter++;
-  if(ghoulCounter > ghoulCounterMax) {
-    ghoulCounter = 0;
-    let randomX = getRandomInt(1, getMapWidth()-3);
-    while(randomX === getFirst(player).x) {
-      randomX = getRandomInt(1, getMapWidth()-3);
+  let canSpawn = true;
+  ghoulImmuneLevels.forEach(ij => {
+    if (levelI === ij[0] && levelJ === ij[1]) {
+      canSpawn = false;
     }
-    let randomY = getRandomInt(1, getMapHeight()-3);
-    while(randomY === getFirst(player).y) {
-      randomY = getRandomInt(1, getMapHeight()-3);
-    }
-    if(getFirst(player).x-randomX > 0) {
+  });
+
+  if (canSpawn) {
+    ghoulCounter++;
+    if (ghoulCounter > ghoulCounterMax) {
+      ghoulCounter = 0;
+      let randomX = getRandomInt(1, getMapWidth() - 3);
+      while (randomX === getFirst(player).x) {
+        randomX = getRandomInt(1, getMapWidth() - 3);
+      }
+      let randomY = getRandomInt(1, getMapHeight() - 3);
+      while (randomY === getFirst(player).y) {
+        randomY = getRandomInt(1, getMapHeight() - 3);
+      }
+      if (getFirst(player).x - randomX > 0) {
         addSprite(randomX, randomY, ghoulRight);
-    }else{
-      addSprite(randomX, randomY, ghoulLeft);
-    }
-    //console.log(`${randomX}, ${randomY}`);
-    ghoulCounterMax += getRandomInt(-5-difficultyGhoulSpawn, 15); // add some randomness, give more weight to increase since we dont want the player to die as soon as they spawn
-    //ghoulCounterMax += 1000;
-    ghoulDifficultyIncreaser ++;
-    if(ghoulDifficultyIncreaser >= 6) {
-      ghoulDifficultyIncreaser = 0;
-      difficultyGhoulSpawn += 3;
+      } else {
+        addSprite(randomX, randomY, ghoulLeft);
+      }
+      //console.log(`${randomX}, ${randomY}`);
+      ghoulCounterMax += getRandomInt(-5 - difficultyGhoulSpawn, 15); // add some randomness, give more weight to increase since we dont want the player to die as soon as they spawn
+      //ghoulCounterMax += 1000;
+      ghoulDifficultyIncreaser++;
+      if (ghoulDifficultyIncreaser >= 6) {
+        ghoulDifficultyIncreaser = 0;
+        difficultyGhoulSpawn += 3;
+      }
     }
   }
 }
 
 function manageSleepyGhoulSpawns() {
-  if(levelI !== 0 || levelJ !== 0){
+  let canSpawn = true;
+  sleepyGhoulImmuneLevels.forEach(ij => {
+    if (levelI === ij[0] && levelJ === ij[1]) {
+      canSpawn = false;
+    }
+  });
+  if (canSpawn) {
     sleepyGhoulCounter++;
-    if(sleepyGhoulCounter > sleepyGhoulCounterMax) {
+    if (sleepyGhoulCounter > sleepyGhoulCounterMax) {
       sleepyGhoulCounter = 0;
-      let randomX = getRandomInt(1, getMapWidth()-3);
-      while(randomX === getFirst(player).x) {
-        randomX = getRandomInt(1, getMapWidth()-3);
+      let randomX = getRandomInt(1, getMapWidth() - 3);
+      while (randomX === getFirst(player).x) {
+        randomX = getRandomInt(1, getMapWidth() - 3);
       }
-      let randomY = getRandomInt(1, getMapHeight()-3);
-      while(randomY === getFirst(player).y) {
-        randomY = getRandomInt(1, getMapHeight()-3);
+      let randomY = getRandomInt(1, getMapHeight() - 3);
+      while (randomY === getFirst(player).y) {
+        randomY = getRandomInt(1, getMapHeight() - 3);
       }
       addSprite(randomX, randomY, sleepyGhoul);
+      //console.log(`${randomX}, ${randomY}`);
+      //sleepyGhoulCounterMax += 1000;
+    }
+  }
+}
+
+function manageSkeletonSpawns() {
+  let canSpawn = true;
+  skeletonImmuneLevels.forEach(ij => {
+    if (levelI === ij[0] && levelJ === ij[1]) {
+      canSpawn = false;
+    }
+  });
+  if (canSpawn) {
+    skeletonCounter++;
+    if (skeletonCounterMax === skeletonCounter) {
+      skeletonCounter = 0;
+      let randoms = getValidRandomCoords();
+      if(randoms[2] === "left") {
+        addSprite(randoms[0], randoms[1], skeletonLeft);
+      } else {
+        addSprite(randoms[0], randoms[1], skeletonRight);
+      }
       //console.log(`${randomX}, ${randomY}`);
       //sleepyGhoulCounterMax += 1000;
     }
@@ -769,46 +901,52 @@ function refreshText() {
 
 // Interval for misc things
 setInterval(() => {
-  if(!canShootBullet){
+  if (!canShootBullet) {
     addText("reloading");
     texts.push(["reloading", {}]);
-  }else {
-    texts = texts.filter(n => n[0]!=="reloading");
+  } else {
+    texts = texts.filter(n => n[0] !== "reloading");
     refreshText();
   }
 
   // Monster spawner timer, I decided to stop creating random new timers now
   manageGhoulSpawns();
   manageSleepyGhoulSpawns();
+  manageSkeletonSpawns();
 }, 100);
 
 function xAndYCoordMotionEnemy(enemyType) {
   getAll(enemyType).forEach(enemy => {
     let playerX = getFirst(player).x;
     let playerY = getFirst(player).y;
-    if(playerX === enemy.x) {
-      if(playerY > enemy.y) enemy.y ++;
-      else if(playerY < enemy.y) enemy.y--;
+    if (playerX === enemy.x) {
+      if (playerY > enemy.y) enemy.y++;
+      else if (playerY < enemy.y) enemy.y--;
       //else if(playerY === enemy.y) console.log("player dead");
-    } else if(playerY === enemy.y) {
-      if(playerX > enemy.x) enemy.x ++;
-      else if(playerX < enemy.x) enemy.x--;
+    } else if (playerY === enemy.y) {
+      if (playerX > enemy.x) enemy.x++;
+      else if (playerX < enemy.x) enemy.x--;
       //else if(playerX === enemy.x) console.log("player dead");
     } else {
       let xOrY = getRandomInt(0, 1);
-      if(xOrY === 0) {
-        if(playerX > enemy.x) enemy.x ++;
-        else if(playerX < enemy.x) enemy.x--;
+      if (xOrY === 0) {
+        if (playerX > enemy.x) enemy.x++;
+        else if (playerX < enemy.x) enemy.x--;
         //else if(playerX === enemy.x) console.log("player dead");
       } else {
-        if(playerY > enemy.y) enemy.y ++;
-        else if(playerY < enemy.y) enemy.y--;
+        if (playerY > enemy.y) enemy.y++;
+        else if (playerY < enemy.y) enemy.y--;
         //else if(playerY === enemy.y) console.log("player dead");
       }
     }
     bulletEnemyKill(bulletLeft, enemyType);
     bulletEnemyKill(bulletRight, enemyType);
   })
+}
+
+function allBulletKill(enemyType) {
+  bulletEnemyKill(bulletLeft, enemyType);
+  bulletEnemyKill(bulletRight, enemyType);
 }
 
 // Ghoul interval
@@ -826,17 +964,15 @@ setInterval(() => {
       if (playerY > currentGhoul.y) {
         currentGhoul.y++;
         bulletEnemyKill(bulletUp, sleepyGhoul);
-      }
-      else if (playerY < currentGhoul.y) {
+      } else if (playerY < currentGhoul.y) {
         bulletEnemyKill(bulletDown, sleepyGhoul);
         currentGhoul.y--;
       }
     } else if (playerY === currentGhoul.y) {
-      if (playerX > currentGhoul.x)  {
+      if (playerX > currentGhoul.x) {
         bulletEnemyKill(bulletLeft, sleepyGhoul);
         currentGhoul.x++;
-      }
-      else if (playerX < currentGhoul.x) {
+      } else if (playerX < currentGhoul.x) {
         bulletEnemyKill(bulletRight, sleepyGhoul);
         currentGhoul.x--;
       }
@@ -844,58 +980,66 @@ setInterval(() => {
   });
 }, 100);
 
+// Skeleton interval
+setInterval(() => {
+  allBulletKill(skeletonLeft);
+  allBulletKill(skeletonRight);
+}, 100);
+
+// just in case
+setInterval(() => {
+  checkBulletEnemyKillAll();
+}, 100);
+
 let di = 0;
 let dj = 0;
 let shownText = false;
 afterInput(() => {
   // Player collisions
-  if(tilesWith(player, doorLeft).length !== 0) {
-    dj --;
-  } else if(tilesWith(player, doorRight).length !== 0) {
-    dj ++;
-  } else if(tilesWith(player, doorUp).length !== 0) {
+  if (tilesWith(player, doorLeft).length !== 0) {
+    dj--;
+  } else if (tilesWith(player, doorRight).length !== 0) {
+    dj++;
+  } else if (tilesWith(player, doorUp).length !== 0) {
     di++;
-  } else if(tilesWith(player, doorDown).length !== 0) {
+  } else if (tilesWith(player, doorDown).length !== 0) {
     di--;
   }
   levelI += di;
   levelJ += dj;
-  if(di !== 0 || dj !== 0) {
+  if (di !== 0 || dj !== 0) {
     setMap(levels[levelI][levelJ]);
-    if(levelI === initI && levelJ === initJ) { // player just entered the starting room again
-      if(di === -1) { // went down, so spawn on up
+    if (levelI === initI && levelJ === initJ) { // player just entered the starting room again
+      if (di === -1) { // went down, so spawn on up
         getFirst(player).x = 4;
         getFirst(player).y = 1;
       } else if (di === 1) {
         getFirst(player).x = 4;
         getFirst(player).y = 5;
-      } else if(dj === 1) {
+      } else if (dj === 1) {
         getFirst(player).x = 1;
         getFirst(player).y = 3;
-      } else if(dj === -1) {
+      } else if (dj === -1) {
         getFirst(player).x = 7;
         getFirst(player).y = 3
       }
     }
   }
-  
-  di = 0;
-  dj = 0;
-  if(levelI === initI && levelJ === initJ+1) {
-    if(!shownText){
-      let options = {y:15,color:color`3`};
-      addText("Meet some friends", options);
-      texts.push(["Meet some friends", options]);
-      shownText = true;
-    } else {
-      let options = {y:15,color:color`3`};
+
+  if (levelI === initI && levelJ === initJ + 1) {
+    if (!shownText) {
+      let options = { y: 15, color: color`3` };
       addText("The Butchery", options);
       texts.push(["The Butchery", options]);
+      if (di === 0 || dj === 0) shownText = true;
     }
   } else {
     //clearText();
-    texts = texts.filter(n => n[0] !== "Meet some friends" && n[0] !== "The Butchery");
+    texts = texts.filter(n => n[0] !== "The Butchery");
     console.log(texts);
     refreshText();
   }
+
+  di = 0;
+  dj = 0;
 });
