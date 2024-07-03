@@ -31,6 +31,7 @@ const flower1 = "l";
 const flower2 = "m";
 const blood = "b";
 const goldenTomb = "e";
+const goldenFlowers = "0";
 
 const bulletVels = {
   ">": [1, 0],
@@ -44,7 +45,7 @@ const enemies = [
   sleepyGhoul
 ];
 
-const initI = 1;
+const initI = 3;
 const initJ = 2;
 
 const PLAYER_WALK_SPEED = 1;
@@ -472,6 +473,23 @@ L10CCCCCCCCC0DDD
 4444444444494444
 4444444444449444
 4444444444444944`],
+  [goldenFlowers, bitmap`
+4444444444444444
+4664466446644664
+4664466446644664
+4444444444444444
+4444444444444444
+4664466446644664
+4664466446644664
+4444444444444444
+4444444444444444
+4664466446644664
+4664466446644664
+4444444444444444
+4444444444444444
+4664466446644664
+4664466446644664
+4444444444444444`]
 );
 
 setBackground(grass);
@@ -481,20 +499,60 @@ setSolids([player, wall]);
 let levelI = initI;
 let levelJ = initJ;
 const levels = [
-  [map``,
-  map`
+  ['','',map`
+w'www
+wp[]w
+wl{}w
+wmffw
+wwwww`],
+  [map`
+wwwwwwww'w
+w0000000pw
+w00000000w
+w00000000w
+w00000000w
+we0000000w
+w00000000w
+w00000000w
+w00000000w
+w00000000w
+wwwwwwwwww`,
+   map`
+wwww''wwww
+wggggpgggw
+wttttttttw
+wttttttttw
+wttttttttw
+wtttttttt:
+wttttttttw
+wttttttttw
+wttttttttw
+wttttttttw
+wwwwwwwwww`,
+    map`
 wwwwwwwwww
+wggggwgggw
+wgwggwgwgw
+wgwwwwgwgw
+wgwggwgwgw
+;pgggwgwgw
+wwwggggwgw
+wgwggggwgw
+wgwgwwwwgw
 wggggggggw
-wgwwwwwggw
-wgwgwggggw
-;ggggwwwgw
-;ggwgggww:
-wwwwggggp:
-wggggggwgw
-wgwwwwwwgw
-wggggggggw
-wwww""wwww`],
-  [map``,
+www"wwwwww`,],
+  [map`
+wwwwwwwwww
+wgwggwgggw
+wgwggwgwgw
+wgwgggggp:
+;gwwwwwgg:
+;gggggwggw
+wggwggwggw
+wggwwwwggw
+wwwwggwggw
+wwgggggggw
+www""wwwww`,
   map`
 wwwwwwww'w
 wggggwggpw
