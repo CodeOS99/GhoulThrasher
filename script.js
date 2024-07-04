@@ -34,6 +34,7 @@ const goldenTomb = "e";
 const goldenFlowers = "0";
 const skeletonLeft = "1";
 const skeletonRight = "2";
+const skeletonArrow = "3";
 
 const bulletVels = {
   ">": [1, 0],
@@ -45,11 +46,23 @@ const bulletVels = {
 const enemies = [
   ghoulLeft, ghoulRight,
   sleepyGhoul,
-  skeletonLeft, skeletonRight
+  skeletonLeft, skeletonRight, skeletonArrow
 ];
+
+const butcheryMax = 10;
+
+const enemyScoreMap = {
+  'h':1,
+  'o':1,
+  's':2,
+  '1':2,
+  '2':2,
+  '3':1
+};
 
 const initI = 3;
 const initJ = 2;
+const butcheryCoords = [3,3];
 
 const PLAYER_WALK_SPEED = 1;
 
@@ -96,13 +109,34 @@ const skeletonImmuneLevels = [
   [1, 0],
   [1, 1],
   [1, 2],
-  [2, 0][2, 1],
+  [2, 0],[2, 1],
   [3, 0],
   [3, 1],
   [initI, initJ]
 ];
 
+let butcheryScore = 0;
+
+let gemsCollected = 0;
+
 setLegend(
+    [skeletonArrow, bitmap`
+................
+................
+................
+................
+....00000000....
+....01111120....
+....01111110....
+....0L111110....
+....0LL11110....
+....0LLL1110....
+....0LLL1110....
+....00000000....
+................
+................
+................
+................`],
   [goldenTomb, bitmap`
 4444444444444444
 4444446666644444
@@ -561,7 +595,7 @@ L10CCCCCCCCC0DDD
 4444444444444444
 4664466446644664
 4664466446644664
-4444444444444444`]
+4444444444444444`],
 );
 
 setBackground(grass);
@@ -755,7 +789,25 @@ function checkBulletEnemyKillAll(bulletType) {
 function bulletEnemyKill(bulletType, enemyType) {
   tilesWith(enemyType, bulletType).forEach(enemyAndBullet => {
     enemyAndBullet.forEach((sprite) => {
-      if (sprite._type === bulletType || sprite._type === enemyType) sprite.remove();
+      if (sprite._type === bulletType || sprite._type === enemyType) {
+        if(levelI === butcheryCoords[0] && levelJ === butcheryCoords[1]) {
+          butcheryScore += enemyScoreMap[enemyType];
+          console.log(enemyScoreMap[enemyType]);
+          let options = { y: 15, color: color`3` };
+          texts.push([`The Butchery, ${butcheryScore}/${butcheryMax}`, options]);
+          texts = texts.filter(n => n[0]!==`The Butchery, ${butcheryScore-enemyScoreMap[enemyType]}/${butcheryMax}`);
+          refreshText();
+
+          if(butcheryScore === butcheryMax){
+            gemsCollected++;
+            addSprite(7, 3, goldenTomb);
+            ghoulImmuneLevels.push([3,3]);
+            sleepyGhoulImmuneLevels.push([3,3]);
+            skeletonImmuneLevels.push([3,3]);
+          }
+        }
+        sprite.remove();
+      }
     });
   });
 }
@@ -980,15 +1032,31 @@ setInterval(() => {
   });
 }, 100);
 
+function spawnskeletonArrow(skeleton) {
+  addSprite(skeleton.x+1, skeleton.y, skeletonArrow);
+}
+
 // Skeleton interval
 setInterval(() => {
-  allBulletKill(skeletonLeft);
-  allBulletKill(skeletonRight);
-}, 100);
+  getAll(skeletonLeft).forEach(skeleton => {
+    spawnskeletonArrow(skeleton);
+  });
+  getAll(skeletonRight).forEach(skeleton => {
+    spawnskeletonArrow(skeleton);
+  });
+}, 1500);
+
+// Bullet interval
+setInterval(() => {
+  xAndYCoordMotionEnemy(skeletonArrow); 
+},300);
 
 // just in case
 setInterval(() => {
-  checkBulletEnemyKillAll();
+  checkBulletEnemyKillAll(bulletLeft);
+  checkBulletEnemyKillAll(bulletRight);
+  checkBulletEnemyKillAll(bulletUp);
+  checkBulletEnemyKillAll(bulletDown);
 }, 100);
 
 let di = 0;
@@ -1008,6 +1076,11 @@ afterInput(() => {
   levelI += di;
   levelJ += dj;
   if (di !== 0 || dj !== 0) {
+    // ALl the inits as well
+    texts = texts.filter(n => n[0]!==`The Butchery, ${butcheryScore}/${butcheryMax}`); // needed for butchery, i bet i could find a better way to do this but whatever
+    
+    butcheryScore = 0;
+    shownText = false;
     setMap(levels[levelI][levelJ]);
     if (levelI === initI && levelJ === initJ) { // player just entered the starting room again
       if (di === -1) { // went down, so spawn on up
@@ -1026,16 +1099,16 @@ afterInput(() => {
     }
   }
 
-  if (levelI === initI && levelJ === initJ + 1) {
+  if (levelI === butcheryCoords[0] && levelJ === butcheryCoords[1]) {
     if (!shownText) {
       let options = { y: 15, color: color`3` };
-      addText("The Butchery", options);
-      texts.push(["The Butchery", options]);
-      if (di === 0 || dj === 0) shownText = true;
+      addText(`The Butchery, 0/${butcheryMax}`, options);
+      texts.push([`The Butchery, 0/${butcheryMax}`, options]);
+      shownText = true;
     }
   } else {
     //clearText();
-    texts = texts.filter(n => n[0] !== "The Butchery");
+    texts = texts.filter(n => n[0] !== `The Butchery, ${butcheryScore}/${butcheryMax}`);
     console.log(texts);
     refreshText();
   }
