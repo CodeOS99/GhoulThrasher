@@ -38,6 +38,7 @@ const skeletonArrow = "3";
 const invertedPlayer = "k"
 const invertedGrass = "6";
 const invertedBrick = "z";
+const invertedButton = "9";
 
 const bulletVels = {
   ">": [1, 0],
@@ -68,7 +69,7 @@ const initJ = 2;
 const butcheryCoords = [3, 3];
 const mazeEnd = [1, 0];
 const inverterStart = [2, 2];
-const inverters = [[2,2],[2,3]];
+const inverters = [[2,2],[2,3],[2,4],[2,5]];
 
 let mazeGemGotten = false;
 let butcheryGemGotten = false;
@@ -101,7 +102,8 @@ const ghoulImmuneLevels = [
   [2, 1],
   [3, 0],
   [3, 1],
-  [2, 3]
+  [2, 2],
+  [2, 3],
 ]
 const sleepyGhoulImmuneLevels = [
   [0, 3],
@@ -113,7 +115,6 @@ const sleepyGhoulImmuneLevels = [
   [3, 0],
   [3, 1],
   [initI, initJ],
-  [2, 3]
 ];
 const skeletonImmuneLevels = [
   [0, 2],
@@ -125,8 +126,13 @@ const skeletonImmuneLevels = [
   [3, 0],
   [3, 1],
   [initI, initJ],
-  [2, 3]
 ];
+
+for (let level of inverters) {
+  ghoulImmuneLevels.push(level);
+  sleepyGhoulImmuneLevels.push(level);
+  skeletonImmuneLevels.push(level);
+}
 
 let butcheryScore = 0;
 
@@ -135,6 +141,23 @@ let gemsCollected = 0;
 let inverted = false;
 
 setLegend(
+  [invertedButton, bitmap`
+................
+................
+...222222222....
+..22211111122...
+.2221333333122..
+.22133333333122.
+.21C33333333312.
+.21C33333333312.
+.21CC3333333312.
+.21CC3333333312.
+.21CCC333333312.
+.2L1CCC33333122.
+..2L1CCC333122..
+...2L11111122...
+....22222222....
+................`],
   [skeletonArrow, bitmap`
 ................
 ................
@@ -666,7 +689,7 @@ L10CCCCCCCCC0DDD
 
 setBackground(grass);
 
-setSolids([player, wall]);
+setSolids([player, wall, invertedPlayer]);
 
 let levelI = initI;
 let levelJ = initJ;
@@ -749,15 +772,31 @@ wwwwwwwww
 wgggwgggw
 wgggwgggw
 wgggwgggw
-wwwwwwwww`, //INVERTer
+wwwwwwwww`, //INVERTer 1 1
     map`
-wwww'wwww
+wwwwwwwww
 w666k666w
 wzzzzzzzw
 w666z666:
 w666z666w
 w666z666w
-wwwwwwwww` // inverter
+wwwwwwwww`, // inverter 1 1
+     map`
+wwwwwwwww
+wggwwgggw
+wwwwgwggw
+;pgwgwggw
+wwwwgwggw
+wwg.gwggw
+wwwwwwwww`, // inverter 2
+   map`
+wwwwwwwww
+w66www66w
+w66w6z66w
+wk6w6w66:
+wwzwww66w
+ww6w6w66w
+wwwwwwwww`, // inverter 2
   ],
   [map`
 wwwwwwwwww
@@ -879,9 +918,9 @@ onInput("k", () => {
       canShootBullet = false;
       checkBulletEnemyKillAll(bulletDown);
 
-    } else {
-      invert();
     }
+  } else {
+    invert();
   }
 });
 
@@ -895,28 +934,48 @@ onInput("l", () => {
   } else {
     levelI = inverterStart[0];
     levelJ = inverterStart[1];
+    initAll();
     setMap(levels[levelI][levelJ]);
   }
 });
 
 function invert() {
   if (inverted) {
+      let nowX = getFirst(invertedPlayer).x;
+      let nowY = getFirst(invertedPlayer).y;
       inverted = false;
       levelJ--;
       setMap(levels[levelI][levelJ]);
+      console.log(`${nowX},${nowY},,,,,${getFirst(player).x},${getFirst(player).y}`);
+      getFirst(player).x = nowX;
+      console.log(getFirst(player).x);
+      getFirst(player).y = nowY;
+      if(getFirst(player).x !== nowX) console.log("Yes problem");
+      console.log(` it is now ${nowX},${nowY},,,,,${getFirst(player).x},${getFirst(player).y}`);
     } else {
+      let nowX = getFirst(player).x;
+      let nowY = getFirst(player).y;
       inverted = true;
       levelJ++;
       setMap(levels[levelI][levelJ]);
+      getFirst(invertedPlayer).x = nowX;
+      getFirst(invertedPlayer).y = nowY;
     }
 }
 
 function isInverter(){
-  inverters.forEach(level =>  {
-    console.log(levelI === level[0] && levelJ === level[1]);
+  for(let level of inverters) {
     if(levelI === level[0] && levelJ === level[1]) return true;
-  });
+  }
   return false;
+}
+
+function initAll() {
+  texts = texts.filter(n => n[0] !== `The Butchery, ${butcheryScore}/${butcheryMax}`); // needed for butchery, i bet i could find a better way to do this but whatever
+
+  butcheryScore = 0;
+  shownText = false;
+  inverted = false;
 }
 
 function checkBulletEnemyKillAll(bulletType) {
@@ -1201,7 +1260,6 @@ let dj = 0;
 let shownText = false;
 afterInput(() => {
   // Player collisions
-  // TODO add all inverted rooms to the immunes
   if (tilesWith(player, doorLeft).length !== 0 || tilesWith(invertedPlayer, doorLeft).length !== 0) {
     dj--;
   } else if (tilesWith(player, doorRight).length !== 0 || tilesWith(invertedPlayer, doorRight).length !== 0) {
@@ -1216,10 +1274,7 @@ afterInput(() => {
   levelJ += dj;
   if (di !== 0 || dj !== 0) {
     // ALl the inits as well
-    texts = texts.filter(n => n[0] !== `The Butchery, ${butcheryScore}/${butcheryMax}`); // needed for butchery, i bet i could find a better way to do this but whatever
-
-    butcheryScore = 0;
-    shownText = false;
+    initAll();
     if (levelI === mazeEnd[0] && levelJ === mazeEnd[1] && !mazeGemGotten) {
       gemsCollected++;
       mazeGemGotten = true;
