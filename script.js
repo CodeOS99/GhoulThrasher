@@ -35,6 +35,9 @@ const goldenFlowers = "0";
 const skeletonLeft = "1";
 const skeletonRight = "2";
 const skeletonArrow = "3";
+const invertedPlayer = "k"
+const invertedGrass = "6";
+const invertedBrick = "z";
 
 const bulletVels = {
   ">": [1, 0],
@@ -52,17 +55,23 @@ const enemies = [
 const butcheryMax = 10;
 
 const enemyScoreMap = {
-  'h':1,
-  'o':1,
-  's':2,
-  '1':2,
-  '2':2,
-  '3':1
+  'h': 1,
+  'o': 1,
+  's': 2,
+  '1': 2,
+  '2': 2,
+  '3': 1
 };
 
 const initI = 3;
 const initJ = 2;
-const butcheryCoords = [3,3];
+const butcheryCoords = [3, 3];
+const mazeEnd = [1, 0];
+const inverterStart = [2, 2];
+const inverters = [[2,2],[2,3]];
+
+let mazeGemGotten = false;
+let butcheryGemGotten = false;
 
 const PLAYER_WALK_SPEED = 1;
 
@@ -91,7 +100,8 @@ const ghoulImmuneLevels = [
   [2, 0],
   [2, 1],
   [3, 0],
-  [3, 1]
+  [3, 1],
+  [2, 3]
 ]
 const sleepyGhoulImmuneLevels = [
   [0, 3],
@@ -102,25 +112,30 @@ const sleepyGhoulImmuneLevels = [
   [2, 1],
   [3, 0],
   [3, 1],
-  [initI, initJ]
+  [initI, initJ],
+  [2, 3]
 ];
 const skeletonImmuneLevels = [
   [0, 2],
   [1, 0],
   [1, 1],
   [1, 2],
-  [2, 0],[2, 1],
+  [2, 0],
+  [2, 1],
   [3, 0],
   [3, 1],
-  [initI, initJ]
+  [initI, initJ],
+  [2, 3]
 ];
 
 let butcheryScore = 0;
 
 let gemsCollected = 0;
 
+let inverted = false;
+
 setLegend(
-    [skeletonArrow, bitmap`
+  [skeletonArrow, bitmap`
 ................
 ................
 ................
@@ -409,6 +424,40 @@ C.2.1222LLL1....
 ......0.0.......
 .....00.00......
 ................`],
+  [invertedPlayer, bitmap`
+................
+................
+.......222......
+.......2F2......
+......2882......
+......28882.2...
+....2224842.2...
+....2.2888222...
+....2.2DDD2.....
+......28882.....
+.....2H8882.....
+.....2HH82......
+......222.......
+......2.2.......
+.....22.22......
+................`],
+  [invertedGrass, bitmap`
+5555555555555555
+5555555555555555
+5555555555555555
+5555555555555555
+5555555555555555
+5555555555555555
+5555555555555555
+5555555555555555
+5555555555555555
+5555555555555555
+5555555555555555
+5555555555555555
+5555555555555555
+5555555555555555
+5555555555555555
+5555555555555555`],
   [grass, bitmap`
 4444444444444444
 4444444444444444
@@ -596,6 +645,23 @@ L10CCCCCCCCC0DDD
 4664466446644664
 4664466446644664
 4444444444444444`],
+   [invertedBrick, bitmap`
+2222222222222222
+2399299929992972
+2399299929992992
+2399299929992992
+2222222222222222
+2392999299929992
+2392999299929992
+2392999299929992
+2222222222222222
+2399299929992992
+2399299929992992
+2339299929992992
+2222222222222222
+2332399299929992
+2332333299929992
+2222222222222222`]
 );
 
 setBackground(grass);
@@ -604,6 +670,7 @@ setSolids([player, wall]);
 
 let levelI = initI;
 let levelJ = initJ;
+// CHANGE ALL COORDS WHEN ADDING ANYTHING!!
 const levels = [
   ['',
     '',
@@ -625,7 +692,7 @@ w00000000w
 w00000000w
 w00000000w
 w00000000w
-wwwwwwwwww`, // mase
+wwwwwwwwww`, // maze end
     map`
 wwww''wwww
 wggggpgggw
@@ -650,7 +717,7 @@ wgwggggwgw
 wgwgwwwwgw
 wggggggggw
 www"wwwwww`,
-  ], // mase
+  ],
   [map`
 wwwwwwwwww
 wgwggwgggw
@@ -674,11 +741,27 @@ wwwggggwgw
 wgwggggwgw
 wgwgwwwwgw
 wggggggggw
-www"wwwwww`
-  ], // maze
+www"wwwwww`, // maze
+    map`
+wwww'wwww
+wgggpgggw
+wwwwwwwww
+wgggwgggw
+wgggwgggw
+wgggwgggw
+wwwwwwwww`, //INVERTer
+    map`
+wwww'wwww
+w666k666w
+wzzzzzzzw
+w666z666:
+w666z666w
+w666z666w
+wwwwwwwww` // inverter
+  ],
   [map`
 wwwwwwwwww
-wgggwggggw
+wgggwggsgw
 wgwgwwwggw
 wgwwwggggw
 wgggggwgp:
@@ -730,57 +813,111 @@ function getMapHeight() {
 setMap(levels[levelI][levelJ]);
 
 setPushables({
-  [player]: []
+  [invertedPlayer]: []
 });
 
 onInput("w", () => {
-  getFirst(player).y -= PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
+  if (getFirst(player) === undefined) {
+    getFirst(invertedPlayer).y -= PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
+  } else {
+    getFirst(player).y -= PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
+  }
 });
 
 onInput("a", () => {
-  getFirst(player).x -= PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
+  if (getFirst(player) === undefined) {
+    getFirst(invertedPlayer).x -= PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
+  } else {
+    getFirst(player).x -= PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
+  }
 });
 
 onInput("s", () => {
-  getFirst(player).y += PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
+  if (getFirst(player) === undefined) {
+    getFirst(invertedPlayer).y += PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
+  } else {
+    getFirst(player).y += PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
+  }
 });
 
 onInput("d", () => {
-  getFirst(player).x += PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
+  if (getFirst(player) === undefined) {
+    getFirst(invertedPlayer).x += PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
+  } else {
+    getFirst(player).x += PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
+  }
 });
 
 onInput("i", () => {
-  if (canShootBullet) {
-    addSprite(getFirst(player).x, getFirst(player).y - 1, bulletUp);
-    canShootBullet = false;
-    checkBulletEnemyKillAll(bulletUp);
+  if (!isInverter()) {
+    if (canShootBullet) {
+      addSprite(getFirst(player).x, getFirst(player).y - 1, bulletUp);
+      canShootBullet = false;
+      checkBulletEnemyKillAll(bulletUp);
+    }
+  } else {
+    invert();
   }
 });
 
 onInput("j", () => {
-  if (canShootBullet) {
-    addSprite(getFirst(player).x - 1, getFirst(player).y, bulletLeft);
-    canShootBullet = false;
-    checkBulletEnemyKillAll(bulletLeft);
+  if (!isInverter()) {
+    if (canShootBullet) {
+      addSprite(getFirst(player).x - 1, getFirst(player).y, bulletLeft);
+      canShootBullet = false;
+      checkBulletEnemyKillAll(bulletLeft);
+    }
+  } else {
+    invert();
   }
 });
 
 onInput("k", () => {
-  if (canShootBullet) {
-    addSprite(getFirst(player).x, getFirst(player).y + 1, bulletDown);
-    canShootBullet = false;
-    checkBulletEnemyKillAll(bulletDown);
+  if (!isInverter()) {
+    if (canShootBullet) {
+      addSprite(getFirst(player).x, getFirst(player).y + 1, bulletDown);
+      canShootBullet = false;
+      checkBulletEnemyKillAll(bulletDown);
 
+    } else {
+      invert();
+    }
   }
 });
 
 onInput("l", () => {
-  if (canShootBullet) {
-    addSprite(getFirst(player).x + 1, getFirst(player).y, bulletRight);
-    canShootBullet = false;
-    checkBulletEnemyKillAll(bulletRight);
+  if (!isInverter()) {
+    if (canShootBullet) {
+      addSprite(getFirst(player).x + 1, getFirst(player).y, bulletRight);
+      canShootBullet = false;
+      checkBulletEnemyKillAll(bulletRight);
+    }
+  } else {
+    levelI = inverterStart[0];
+    levelJ = inverterStart[1];
+    setMap(levels[levelI][levelJ]);
   }
 });
+
+function invert() {
+  if (inverted) {
+      inverted = false;
+      levelJ--;
+      setMap(levels[levelI][levelJ]);
+    } else {
+      inverted = true;
+      levelJ++;
+      setMap(levels[levelI][levelJ]);
+    }
+}
+
+function isInverter(){
+  inverters.forEach(level =>  {
+    console.log(levelI === level[0] && levelJ === level[1]);
+    if(levelI === level[0] && levelJ === level[1]) return true;
+  });
+  return false;
+}
 
 function checkBulletEnemyKillAll(bulletType) {
   enemies.forEach(enemy => bulletEnemyKill(bulletType, enemy));
@@ -790,20 +927,21 @@ function bulletEnemyKill(bulletType, enemyType) {
   tilesWith(enemyType, bulletType).forEach(enemyAndBullet => {
     enemyAndBullet.forEach((sprite) => {
       if (sprite._type === bulletType || sprite._type === enemyType) {
-        if(levelI === butcheryCoords[0] && levelJ === butcheryCoords[1]) {
+        if (levelI === butcheryCoords[0] && levelJ === butcheryCoords[1]) {
           butcheryScore += enemyScoreMap[enemyType];
           console.log(enemyScoreMap[enemyType]);
           let options = { y: 15, color: color`3` };
           texts.push([`The Butchery, ${butcheryScore}/${butcheryMax}`, options]);
-          texts = texts.filter(n => n[0]!==`The Butchery, ${butcheryScore-enemyScoreMap[enemyType]}/${butcheryMax}`);
+          texts = texts.filter(n => n[0] !== `The Butchery, ${butcheryScore-enemyScoreMap[enemyType]}/${butcheryMax}`);
           refreshText();
 
-          if(butcheryScore === butcheryMax){
+          if (butcheryScore === butcheryMax && !butcheryGemGotten) {
             gemsCollected++;
             addSprite(7, 3, goldenTomb);
-            ghoulImmuneLevels.push([3,3]);
-            sleepyGhoulImmuneLevels.push([3,3]);
-            skeletonImmuneLevels.push([3,3]);
+            ghoulImmuneLevels.push([3, 3]);
+            sleepyGhoulImmuneLevels.push([3, 3]);
+            skeletonImmuneLevels.push([3, 3]);
+            butcheryGemGotten = true;
           }
         }
         sprite.remove();
@@ -811,7 +949,6 @@ function bulletEnemyKill(bulletType, enemyType) {
     });
   });
 }
-
 // Function to handle bullet movement
 function moveBullets(bulletType) {
   getAll(bulletType).forEach((bullet) => {
@@ -855,7 +992,7 @@ function getValidRandomCoords() {
   } else {
     return [randomX, randomY, "left"]
   }
-  
+
 }
 
 function manageGhoulSpawns() {
@@ -933,7 +1070,7 @@ function manageSkeletonSpawns() {
     if (skeletonCounterMax === skeletonCounter) {
       skeletonCounter = 0;
       let randoms = getValidRandomCoords();
-      if(randoms[2] === "left") {
+      if (randoms[2] === "left") {
         addSprite(randoms[0], randoms[1], skeletonLeft);
       } else {
         addSprite(randoms[0], randoms[1], skeletonRight);
@@ -1033,7 +1170,7 @@ setInterval(() => {
 }, 100);
 
 function spawnskeletonArrow(skeleton) {
-  addSprite(skeleton.x+1, skeleton.y, skeletonArrow);
+  addSprite(skeleton.x + 1, skeleton.y, skeletonArrow);
 }
 
 // Skeleton interval
@@ -1048,8 +1185,8 @@ setInterval(() => {
 
 // Bullet interval
 setInterval(() => {
-  xAndYCoordMotionEnemy(skeletonArrow); 
-},300);
+  xAndYCoordMotionEnemy(skeletonArrow);
+}, 300);
 
 // just in case
 setInterval(() => {
@@ -1064,23 +1201,30 @@ let dj = 0;
 let shownText = false;
 afterInput(() => {
   // Player collisions
-  if (tilesWith(player, doorLeft).length !== 0) {
+  // TODO add all inverted rooms to the immunes
+  if (tilesWith(player, doorLeft).length !== 0 || tilesWith(invertedPlayer, doorLeft).length !== 0) {
     dj--;
-  } else if (tilesWith(player, doorRight).length !== 0) {
+  } else if (tilesWith(player, doorRight).length !== 0 || tilesWith(invertedPlayer, doorRight).length !== 0) {
     dj++;
-  } else if (tilesWith(player, doorUp).length !== 0) {
+  } else if (tilesWith(player, doorUp).length !== 0 || tilesWith(invertedPlayer, doorUp).length !== 0) {
     di++;
-  } else if (tilesWith(player, doorDown).length !== 0) {
+    console.log("YESS");
+  } else if (tilesWith(player, doorDown).length !== 0 || tilesWith(invertedPlayer, doorDown).length !== 0) {
     di--;
   }
   levelI += di;
   levelJ += dj;
   if (di !== 0 || dj !== 0) {
     // ALl the inits as well
-    texts = texts.filter(n => n[0]!==`The Butchery, ${butcheryScore}/${butcheryMax}`); // needed for butchery, i bet i could find a better way to do this but whatever
-    
+    texts = texts.filter(n => n[0] !== `The Butchery, ${butcheryScore}/${butcheryMax}`); // needed for butchery, i bet i could find a better way to do this but whatever
+
     butcheryScore = 0;
     shownText = false;
+    if (levelI === mazeEnd[0] && levelJ === mazeEnd[1] && !mazeGemGotten) {
+      gemsCollected++;
+      mazeGemGotten = true;
+    }
+
     setMap(levels[levelI][levelJ]);
     if (levelI === initI && levelJ === initJ) { // player just entered the starting room again
       if (di === -1) { // went down, so spawn on up
