@@ -39,6 +39,7 @@ const invertedPlayer = "k"
 const invertedGrass = "6";
 const invertedBrick = "z";
 const invertedButton = "9";
+const pushable = "8";
 
 const bulletVels = {
   ">": [1, 0],
@@ -69,7 +70,7 @@ const initJ = 2;
 const butcheryCoords = [3, 3];
 const mazeEnd = [1, 0];
 const inverterStart = [2, 2];
-const inverters = [[2,2],[2,3],[2,4],[2,5]];
+const inverters = [[2,2],[2,3],[2,4],[2,5],[2,6],[2,7]];
 
 let mazeGemGotten = false;
 let butcheryGemGotten = false;
@@ -140,24 +141,46 @@ let gemsCollected = 0;
 
 let inverted = false;
 
+let pushableList = [];
+let buttonCoords = {
+  '2,6':[[6,3]] // uninverted lvl coords!
+}
+
 setLegend(
+  [pushable, bitmap`
+0000000000000000
+0C666666666666C0
+06C6666666666C60
+066C66666666C660
+0666C666666C6660
+06666C6666C66660
+066666C66C666660
+0666666CC6666660
+0666666CC6666660
+066666C66C666660
+06666C6666C66660
+0666C666666C6660
+066C66666666C660
+06C6666666666C60
+0C666666666666C0
+0000000000000000`],
   [invertedButton, bitmap`
-................
-................
-...222222222....
-..22211111122...
-.2221333333122..
-.22133333333122.
-.21C33333333312.
-.21C33333333312.
-.21CC3333333312.
-.21CC3333333312.
-.21CCC333333312.
-.2L1CCC33333122.
-..2L1CCC333122..
-...2L11111122...
-....22222222....
-................`],
+5555555555555555
+5555555555555555
+5555222222225555
+5552211111122555
+5522133333312255
+5221333333331225
+521C333333333125
+521C333333333125
+521CC33333333125
+521CC33333333125
+521CCC3333333125
+52L1CCC333331225
+522L1CCC33312255
+5522L11111122555
+5552222222225555
+5555555555555555`],
   [skeletonArrow, bitmap`
 ................
 ................
@@ -689,7 +712,7 @@ L10CCCCCCCCC0DDD
 
 setBackground(grass);
 
-setSolids([player, wall, invertedPlayer]);
+setSolids([player, wall, invertedPlayer, pushable]);
 
 let levelI = initI;
 let levelJ = initJ;
@@ -797,6 +820,24 @@ wk6w6w66:
 wwzwww66w
 ww6w6w66w
 wwwwwwwww`, // inverter 2
+   map`
+wwwwwwwww
+wgggggggw
+wgggggggw
+;pg8ggggw
+wgggggggw
+wgggggggw
+wwwwwwwww`,
+   map`
+wwwwwwwww
+w6666666w
+w6666666w
+;k666696w
+w6666666w
+w6666666w
+wwwwwwwww`,
+   map`
+p`
   ],
   [map`
 wwwwwwwwww
@@ -852,7 +893,7 @@ function getMapHeight() {
 setMap(levels[levelI][levelJ]);
 
 setPushables({
-  [invertedPlayer]: []
+  [player]: [pushable]
 });
 
 onInput("w", () => {
@@ -940,27 +981,35 @@ onInput("l", () => {
 });
 
 function invert() {
+  let nowX, nowY;
   if (inverted) {
-      let nowX = getFirst(invertedPlayer).x;
-      let nowY = getFirst(invertedPlayer).y;
-      inverted = false;
-      levelJ--;
-      setMap(levels[levelI][levelJ]);
-      console.log(`${nowX},${nowY},,,,,${getFirst(player).x},${getFirst(player).y}`);
-      getFirst(player).x = nowX;
-      console.log(getFirst(player).x);
-      getFirst(player).y = nowY;
-      if(getFirst(player).x !== nowX) console.log("Yes problem");
-      console.log(` it is now ${nowX},${nowY},,,,,${getFirst(player).x},${getFirst(player).y}`);
-    } else {
-      let nowX = getFirst(player).x;
-      let nowY = getFirst(player).y;
-      inverted = true;
-      levelJ++;
-      setMap(levels[levelI][levelJ]);
-      getFirst(invertedPlayer).x = nowX;
-      getFirst(invertedPlayer).y = nowY;
+    nowX = getFirst(invertedPlayer).x;
+    nowY = getFirst(invertedPlayer).y;
+    inverted = false;
+    levelJ--;
+    setMap(levels[levelI][levelJ]);
+    getFirst(player).remove();
+    addSprite(nowX, nowY, player);
+
+    let pushables = getAll(pushable);
+    for(let i = 0; i < pushables.length; i++) {
+      pushables[i].remove();
+      addSprite(pushableList[i][0], pushableList[i][1], pushable)
     }
+    pushableList = [];
+  } else {
+    nowX = getFirst(player).x;
+    nowY = getFirst(player).y;
+    inverted = true;
+    levelJ++;
+    for(let pushable1 of getAll(pushable)) {
+      pushableList.push([pushable1.x, pushable1.y]);
+      console.log(pushableList);
+    }
+    setMap(levels[levelI][levelJ]);
+    getFirst(invertedPlayer).remove();
+    addSprite(nowX, nowY, invertedPlayer);
+  }
 }
 
 function isInverter(){
@@ -1259,6 +1308,18 @@ let di = 0;
 let dj = 0;
 let shownText = false;
 afterInput(() => {
+  // pushable button connection
+  if(buttonCoords[`${levelI},${levelJ}`] !== undefined) {
+    let pushables = getAll(pushable);
+    for(let i = 0; i < pushables.length; i++) {
+      let targetButtonCoord = buttonCoords[`${levelI},${levelJ}`][i];
+      console.log(pushables[i]);
+      console.log(targetButtonCoord);
+      if(pushables[i].x === targetButtonCoord[0] && pushables[i].y === targetButtonCoord[1]) {
+        dj+=2;
+      }
+    }
+  }
   // Player collisions
   if (tilesWith(player, doorLeft).length !== 0 || tilesWith(invertedPlayer, doorLeft).length !== 0) {
     dj--;
@@ -1308,7 +1369,6 @@ afterInput(() => {
   } else {
     //clearText();
     texts = texts.filter(n => n[0] !== `The Butchery, ${butcheryScore}/${butcheryMax}`);
-    console.log(texts);
     refreshText();
   }
 
