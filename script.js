@@ -70,7 +70,7 @@ const initJ = 2;
 const butcheryCoords = [3, 3];
 const mazeEnd = [1, 0];
 const inverterStart = [2, 2];
-const inverters = [[2,2],[2,3],[2,4],[2,5],[2,6],[2,7]];
+const inverters = [[2,2],[2,3],[2,4],[2,5],[2,6],[2,7],[2,8],[2,9],[2,10],[2,11],[2,12],[2,13]];
 
 let mazeGemGotten = false;
 let butcheryGemGotten = false;
@@ -143,7 +143,9 @@ let inverted = false;
 
 let pushableList = [];
 let buttonCoords = {
-  '2,6':[[6,3]] // uninverted lvl coords!
+  '2,6':[[6,3]], // uninverted lvl coords!
+  '2,8':[[2,5]],
+  '2,10':[[6,2], [6,3], [6,4]],
 }
 
 setLegend(
@@ -170,13 +172,13 @@ setLegend(
 5555222222225555
 5552211111122555
 5522133333312255
-5221333333331225
-521C333333333125
-521C333333333125
-521CC33333333125
-521CC33333333125
-521CCC3333333125
-52L1CCC333331225
+5221333323331225
+521C333332333125
+521C333333233125
+521C222222223125
+521CC33333233125
+521CCC3332333125
+52L1CCC323331225
 522L1CCC33312255
 5522L11111122555
 5552222222225555
@@ -827,7 +829,7 @@ wgggggggw
 ;pg8ggggw
 wgggggggw
 wgggggggw
-wwwwwwwww`,
+wwwwwwwww`, // inverter 3
    map`
 wwwwwwwww
 w6666666w
@@ -835,9 +837,57 @@ w6666666w
 ;k666696w
 w6666666w
 w6666666w
-wwwwwwwww`,
+wwwwwwwww`, // inverter 3
    map`
-p`
+wwwwwwwww
+wggwgwggw
+wwgwgwggw
+;p8ggwggw
+wwgwwwggw
+wwggggggw
+wwwwwwwww`, // inverted 4
+   map`
+wwwwwwwww
+w66w6w66w
+wzww6w66w
+;k666w66:
+ww6www66w
+ww966666w
+wwwwwwwww`, //inverted 4
+   map`
+wwwwwwwww
+wgggggggw
+wg8gggggw
+;p8gggggw
+wg8gggggw
+wgggggggw
+wwwwwwwww`, // inverted 5
+   map`
+wwwwwwwww
+w6666666w
+w6666696w
+;k666696w
+w6666696w
+w6666666w
+wwwwwwwww`, // inverted 5
+   map`
+wwwwwwwwwww
+wwwwggwgggw
+wwg8ggwgggw
+wpwwggwgggw
+wwwwwgwgggw
+wwwwggwgggw
+wg8gggwgggw
+wwwwwwwwwww`, // inverted 6
+   map`
+wwwwwwwwwww
+wwww96w666w
+wzzw66w666w
+wkzz66w666w
+wzwww6w666w
+wzww66w666w
+w66669w666w
+wwwwwwwwwww`, // inverted 6
   ],
   [map`
 wwwwwwwwww
@@ -973,9 +1023,6 @@ onInput("l", () => {
       checkBulletEnemyKillAll(bulletRight);
     }
   } else {
-    levelI = inverterStart[0];
-    levelJ = inverterStart[1];
-    initAll();
     setMap(levels[levelI][levelJ]);
   }
 });
@@ -1310,14 +1357,23 @@ let shownText = false;
 afterInput(() => {
   // pushable button connection
   if(buttonCoords[`${levelI},${levelJ}`] !== undefined) {
+    let buttonFlagWhole = true;
     let pushables = getAll(pushable);
     for(let i = 0; i < pushables.length; i++) {
-      let targetButtonCoord = buttonCoords[`${levelI},${levelJ}`][i];
-      console.log(pushables[i]);
-      console.log(targetButtonCoord);
-      if(pushables[i].x === targetButtonCoord[0] && pushables[i].y === targetButtonCoord[1]) {
-        dj+=2;
+      let targetButtonCoord = buttonCoords[`${levelI},${levelJ}`];
+      let buttonFlag = false;
+      for(let coord of targetButtonCoord) {
+        if(pushables[i].x === coord[0] && pushables[i].y === coord[1]) {
+          buttonFlag = true;
+          console.log("loging ", );
+        }
       }
+      if(!buttonFlag) {
+          buttonFlagWhole = false;
+      }
+    }
+    if(buttonFlagWhole) {
+        dj+=2;
     }
   }
   // Player collisions
