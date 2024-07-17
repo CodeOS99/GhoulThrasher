@@ -40,6 +40,7 @@ const invertedGrass = "6";
 const invertedBrick = "z";
 const invertedButton = "9";
 const pushable = "8";
+const backToStartTper = "B";
 
 const bulletVels = {
   ">": [1, 0],
@@ -70,7 +71,7 @@ const initJ = 2;
 const butcheryCoords = [3, 3];
 const mazeEnd = [1, 0];
 const inverterStart = [2, 2];
-const inverters = [[2,2],[2,3],[2,4],[2,5],[2,6],[2,7],[2,8],[2,9],[2,10],[2,11],[2,12],[2,13]];
+const inverters = [[2,2],[2,3],[2,4],[2,5],[2,6],[2,7],[2,8],[2,9],[2,10],[2,11],[2,12],[2,13],[2,14],[2,15]];
 
 let mazeGemGotten = false;
 let butcheryGemGotten = false;
@@ -105,6 +106,7 @@ const ghoulImmuneLevels = [
   [3, 1],
   [2, 2],
   [2, 3],
+  [2,16]
 ]
 const sleepyGhoulImmuneLevels = [
   [0, 3],
@@ -116,6 +118,7 @@ const sleepyGhoulImmuneLevels = [
   [3, 0],
   [3, 1],
   [initI, initJ],
+  [2,16]
 ];
 const skeletonImmuneLevels = [
   [0, 2],
@@ -127,6 +130,7 @@ const skeletonImmuneLevels = [
   [3, 0],
   [3, 1],
   [initI, initJ],
+  [2,16]
 ];
 
 for (let level of inverters) {
@@ -146,6 +150,8 @@ let buttonCoords = {
   '2,6':[[6,3]], // uninverted lvl coords!
   '2,8':[[2,5]],
   '2,10':[[6,2], [6,3], [6,4]],
+  '2,12':[[4,1],[5,6]],
+  '2,14':[[9,1]]
 }
 
 setLegend(
@@ -709,7 +715,24 @@ L10CCCCCCCCC0DDD
 2222222222222222
 2332399299929992
 2332333299929992
-2222222222222222`]
+2222222222222222`],
+  [backToStartTper, bitmap`
+0000000000000000
+0666666666666660
+0666336666666660
+0663336666666660
+0633336666666660
+0333333333333330
+C333333333333330
+C333333333333330
+C333333333333330
+C333333333333330
+0333336666666660
+0633336666666660
+0663336666666660
+0666336666666660
+0666666666666660
+0000000000000000`]
 );
 
 setBackground(grass);
@@ -777,7 +800,7 @@ wggwggwggw
 wggwwwwggw
 wwwwggwggw
 wwgggggggw
-www""wwwww`, // maze
+www""wwwww`, // maze 2,0
     map`
 wwwwwwww'w
 wggggwggpw
@@ -789,7 +812,7 @@ wwwggggwgw
 wgwggggwgw
 wgwgwwwwgw
 wggggggggw
-www"wwwwww`, // maze
+www"wwwwww`, // maze 2.1
     map`
 wwww'wwww
 wgggpgggw
@@ -797,7 +820,7 @@ wwwwwwwww
 wgggwgggw
 wgggwgggw
 wgggwgggw
-wwwwwwwww`, //INVERTer 1 1
+wwwwwwwww`, //INVERTer 1 2,2
     map`
 wwwwwwwww
 w666k666w
@@ -805,15 +828,15 @@ wzzzzzzzw
 w666z666:
 w666z666w
 w666z666w
-wwwwwwwww`, // inverter 1 1
+wwwwwwwww`, // inverter 1 2,3
      map`
 wwwwwwwww
 wggwwgggw
 wwwwgwggw
-;pgwgwggw
+wpgwgwggw
 wwwwgwggw
 wwg.gwggw
-wwwwwwwww`, // inverter 2
+wwwwwwwww`, // inverter 1 2,4
    map`
 wwwwwwwww
 w66www66w
@@ -821,55 +844,55 @@ w66w6z66w
 wk6w6w66:
 wwzwww66w
 ww6w6w66w
-wwwwwwwww`, // inverter 2
+wwwwwwwww`, // inverter 2 2,5
    map`
 wwwwwwwww
 wgggggggw
 wgggggggw
-;pg8ggggw
+wpg8ggggw
 wgggggggw
 wgggggggw
-wwwwwwwww`, // inverter 3
+wwwwwwwww`, // inverter 3 2,6
    map`
 wwwwwwwww
 w6666666w
 w6666666w
-;k666696w
+wk666696w
 w6666666w
 w6666666w
-wwwwwwwww`, // inverter 3
+wwwwwwwww`, // inverter 3 2,7
    map`
 wwwwwwwww
 wggwgwggw
 wwgwgwggw
-;p8ggwggw
+wp8ggwggw
 wwgwwwggw
 wwggggggw
-wwwwwwwww`, // inverted 4
+wwwwwwwww`, // inverted 4 2,8
    map`
 wwwwwwwww
 w66w6w66w
 wzww6w66w
-;k666w66:
+wk666w66:
 ww6www66w
 ww966666w
-wwwwwwwww`, //inverted 4
+wwwwwwwww`, //inverted 4 2,9
    map`
 wwwwwwwww
 wgggggggw
 wg8gggggw
-;p8gggggw
+wp8gggggw
 wg8gggggw
 wgggggggw
-wwwwwwwww`, // inverted 5
+wwwwwwwww`, // inverted 5 2,10
    map`
 wwwwwwwww
 w6666666w
 w6666696w
-;k666696w
+wk666696w
 w6666696w
 w6666666w
-wwwwwwwww`, // inverted 5
+wwwwwwwww`, // inverted 5 2,11
    map`
 wwwwwwwwwww
 wwwwggwgggw
@@ -878,7 +901,7 @@ wpwwggwgggw
 wwwwwgwgggw
 wwwwggwgggw
 wg8gggwgggw
-wwwwwwwwwww`, // inverted 6
+wwwwwwwwwww`, // inverted 6 2,12
    map`
 wwwwwwwwwww
 wwww96w666w
@@ -887,7 +910,33 @@ wkzz66w666w
 wzwww6w666w
 wzww66w666w
 w66669w666w
-wwwwwwwwwww`, // inverted 6
+wwwwwwwwwww`, // inverted 6 2,13
+   map`
+wwwwwwwwwww
+wg8gggggggw
+wwwwwwwwwgw
+wpggggggssw
+wgsshsssssw
+wgssssssssw
+wsssssssshw
+wwwwwwwwwww`, // inverted 7 2,14
+   map`
+wwwwwwwwwww
+w666666669w
+wzzzzzzzz6w
+wk66666666w
+w666666666w
+w666666666w
+w666666666w
+wwwwwwwwwww`, // inverted 7 2,15
+   map`
+wwwwwwwww
+w0000000w
+w0000000w
+Bp00000ew
+w0000000w
+w0000000w
+wwwwwwwww`
   ],
   [map`
 wwwwwwwwww
@@ -1363,7 +1412,7 @@ afterInput(() => {
       let targetButtonCoord = buttonCoords[`${levelI},${levelJ}`];
       let buttonFlag = false;
       for(let coord of targetButtonCoord) {
-        if(pushables[i].x === coord[0] && pushables[i].y === coord[1]) {
+        if(pushables[i].x === coord[0] && pushables[i].y === coord[1] && pushables[i] !== undefined) {
           buttonFlag = true;
           console.log("loging ", );
         }
@@ -1383,12 +1432,17 @@ afterInput(() => {
     dj++;
   } else if (tilesWith(player, doorUp).length !== 0 || tilesWith(invertedPlayer, doorUp).length !== 0) {
     di++;
-    console.log("YESS");
   } else if (tilesWith(player, doorDown).length !== 0 || tilesWith(invertedPlayer, doorDown).length !== 0) {
     di--;
   }
   levelI += di;
   levelJ += dj;
+  if(tilesWith(player, backToStartTper).length!== 0) {
+    levelI = initI;
+    levelJ=initJ;
+    setMap(levels[levelI][levelJ])
+    console.log("Silence integrated debugging tool", levelI)
+  }
   if (di !== 0 || dj !== 0) {
     // ALl the inits as well
     initAll();
