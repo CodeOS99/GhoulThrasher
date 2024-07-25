@@ -31,16 +31,26 @@ const flower1 = "l";
 const flower2 = "m";
 const blood = "b";
 const goldenTomb = "e";
-const goldenFlowers = "0";
-const skeletonLeft = "1";
-const skeletonRight = "2";
-const skeletonArrow = "3";
+const goldenFlowers = "&";
+const skeletonLeft = "!";
+const skeletonRight = "@";
+const skeletonArrow = "#";
 const invertedPlayer = "k"
-const invertedGrass = "6";
+const invertedGrass = "$";
 const invertedBrick = "z";
-const invertedButton = "9";
-const pushable = "8";
+const invertedButton = "%";
+const pushable = "*";
 const backToStartTper = "B";
+const health53 = "3";
+const health51 = "1";
+const health52 = "2";
+const health54 = "4";
+const health55 = "5";
+const health50 = "0";
+const health30 = "6";
+const health31 = "7";
+const health32 = "8";
+const health33 = "9";
 
 const bulletVels = {
   ">": [1, 0],
@@ -61,15 +71,15 @@ const enemyScoreMap = {
   'h': 1,
   'o': 1,
   's': 2,
-  '1': 2,
-  '2': 2,
-  '3': 1
+  '!': 2,
+  '@': 2,
+  '#': 1
 };
 
 const initI = 3;
 const initJ = 2;
 const butcheryCoords = [3, 3];
-const mazeEnd = [1, 0];
+const mazeEndCoords = [1, 0];
 const inverterStart = [2, 2];
 const inverters = [[2,2],[2,3],[2,4],[2,5],[2,6],[2,7],[2,8],[2,9],[2,10],[2,11],[2,12],[2,13],[2,14],[2,15]];
 
@@ -94,6 +104,8 @@ let skeletonCounterMax = 100;
 
 // have text?(needed for clearText shenanigins in afterMovement in room 0, 1
 let texts = [];
+
+let playerHealth = 3;
 
 const ghoulImmuneLevels = [
   [0, 3],
@@ -147,7 +159,7 @@ let inverted = false;
 
 let pushableList = [];
 let buttonCoords = {
-  '2,6':[[6,3]], // uninverted lvl coords!
+  '2,6':[[6,4]], // uninverted lvl coords!
   '2,8':[[2,5]],
   '2,10':[[6,2], [6,3], [6,4]],
   '2,12':[[4,1],[5,6]],
@@ -732,12 +744,182 @@ C333333333333330
 0663336666666660
 0666336666666660
 0666666666666660
-0000000000000000`]
+0000000000000000`],
+  [health55,bitmap`
+0000000000000000
+0777777777777770
+0777777777777770
+0777777777777770
+0777777777777770
+0337337337337330
+0337337337337330
+0337337337337330
+0337337337337330
+0337337337337330
+0777777777777770
+0773737733377770
+0773337737377770
+0773737733377770
+0773737737777770
+0000000000000000`],
+  [health54,bitmap`
+0000000000000000
+0777777777777770
+0777777777777770
+0777777777777770
+0777777777777770
+0337337337337LL0
+0337337337337LL0
+0337337337337LL0
+0337337337337LL0
+0337337337337LL0
+0777777777777770
+0773737733377770
+0773337737377770
+0773737733377770
+0773737737777770
+0000000000000000`],
+  [health53,bitmap`
+0000000000000000
+0777777777777770
+0777777777777770
+0777777777777770
+0777777777777770
+0337337337LL7LL0
+0337337337LL7LL0
+0337337337LL7LL0
+0337337337LL7LL0
+0337337337LL7LL0
+0777777777777770
+0773737733377770
+0773337737377770
+0773737733377770
+0773737737777770
+0000000000000000`],
+  [health52,bitmap`
+0000000000000000
+0777777777777770
+0777777777777770
+0777777777777770
+0777777777777770
+0337337LL7LL7LL0
+0337337LL7LL7LL0
+0337337LL7LL7LL0
+0337337LL7LL7LL0
+0337337LL7LL7LL0
+0777777777777770
+0773737733377770
+0773337737377770
+0773737733377770
+0773737737777770
+0000000000000000`],
+  [health51,bitmap`
+0000000000000000
+0777777777777770
+0777777777777770
+0777777777777770
+0777777777777770
+0337LL7LL7LL7LL0
+0337LL7LL7LL7LL0
+0337LL7LL7LL7LL0
+0337LL7LL7LL7LL0
+0337LL7LL7LL7LL0
+0777777777777770
+07737377LLL77770
+07733377L7L77770
+07737377LLL77770
+07737377L7777770
+0000000000000000`],
+  [health50,bitmap`
+0000000000000000
+0777777777777770
+0777777777777770
+0777777777777770
+0777777777777770
+0LL7LL7LL7LL7LL0
+0LL7LL7LL7LL7LL0
+0LL7LL7LL7LL7LL0
+0LL7LL7LL7LL7LL0
+0LL7LL7LL7LL7LL0
+0777777777777770
+077L7L77LLL77770
+077LLL77L7L77770
+077L7L77LLL77770
+077L7L77L7777770
+0000000000000000`],
+  [health33,bitmap`
+0000000000000000
+0777777777777770
+0777777777777770
+0777777777777770
+0777777777777770
+0733373337333770
+0733373337333770
+0733373337333770
+0777777777777770
+0777777777777770
+0777777777777770
+0773737733377770
+0773337737377770
+0773737733377770
+0773737737777770
+0000000000000000`],
+  [health32,bitmap`
+0000000000000000
+0777777777777770
+0777777777777770
+0777777777777770
+0777777777777770
+0733373337LLL770
+0733373337LLL770
+0733373337LLL770
+0777777777777770
+0777777777777770
+0777777777777770
+0773737733377770
+0773337737377770
+0773737733377770
+0773737737777770
+0000000000000000`],
+  [health31,bitmap`
+0000000000000000
+0777777777777770
+0777777777777770
+0777777777777770
+0777777777777770
+073337LLL7LLL770
+073337LLL7LLL770
+073337LLL7LLL770
+0777777777777770
+0777777777777770
+0777777777777770
+07737377LLL77770
+07733377L7L77770
+07737377LLL77770
+07737377L7777770
+0000000000000000`],
+  [health30,bitmap`
+0000000000000000
+0777777777777770
+0777777777777770
+0777777777777770
+0777777777777770
+07LLL7LLL7LLL770
+07LLL7LLL7LLL770
+07LLL7LLL7LLL770
+0777777777777770
+0777777777777770
+0777777777777770
+077L7L77LLL77770
+077LLL77L7L77770
+077L7L77LLL77770
+077L7L77L7777770
+0000000000000000`],
 );
 
 setBackground(grass);
 
-setSolids([player, wall, invertedPlayer, pushable]);
+setSolids([player, wall, invertedPlayer, pushable, health55, health54, health53, health52, health51, health50, health30, health31, health32, health33]);
 
 let levelI = initI;
 let levelJ = initJ;
@@ -754,15 +936,15 @@ wwwww`
   ], // maze
   [map`
 wwwwwwww'w
-w0000000pw
-w00000000w
-w00000000w
-w00000000w
-we0000000w
-w00000000w
-w00000000w
-w00000000w
-w00000000w
+w&&&&&&&pw
+w&&&&&&&&w
+w&&&&&&&&w
+w&&&&&&&&w
+we&&&&&&&w
+w&&&&&&&&w
+w&&&&&&&&w
+w&&&&&&&&w
+w&&&&&&&&w
 wwwwwwwwww`, // maze end
     map`
 wwww''wwww
@@ -823,11 +1005,11 @@ wgggwgggw
 wwwwwwwww`, //INVERTer 1 2,2
     map`
 wwwwwwwww
-w666k666w
+w$$$k$$$w
 wzzzzzzzw
-w666z666:
-w666z666w
-w666z666w
+w$$$z$$$:
+w$$$z$$$w
+w$$$z$$$w
 wwwwwwwww`, // inverter 1 2,3
      map`
 wwwwwwwww
@@ -839,103 +1021,105 @@ wwg.gwggw
 wwwwwwwww`, // inverter 1 2,4
    map`
 wwwwwwwww
-w66www66w
-w66w6z66w
-wk6w6w66:
-wwzwww66w
-ww6w6w66w
+w$$www$$w
+w$$w$z$$w
+wk$w$w$$:
+wwzwww$$w
+ww$w$w$$w
 wwwwwwwww`, // inverter 2 2,5
    map`
 wwwwwwwww
 wgggggggw
 wgggggggw
-wpg8ggggw
+wpg*ggggw
 wgggggggw
 wgggggggw
 wwwwwwwww`, // inverter 3 2,6
    map`
 wwwwwwwww
-w6666666w
-w6666666w
-wk666696w
-w6666666w
-w6666666w
+w$$$$$$$w
+w$$$$$$$w
+wk$$$$$$w
+w$$$$$%$w
+w$$$$$$$w
 wwwwwwwww`, // inverter 3 2,7
    map`
 wwwwwwwww
 wggwgwggw
 wwgwgwggw
-wp8ggwggw
+wp*ggwggw
 wwgwwwggw
 wwggggggw
 wwwwwwwww`, // inverted 4 2,8
    map`
 wwwwwwwww
-w66w6w66w
-wzww6w66w
-wk666w66:
-ww6www66w
-ww966666w
+w$$w$w$$w
+wzww$w$$w
+wk$$$w$$:
+ww$www$$w
+ww%w$$$$w
 wwwwwwwww`, //inverted 4 2,9
    map`
 wwwwwwwww
 wgggggggw
-wg8gggggw
-wp8gggggw
-wg8gggggw
+wg*gggggw
+wp*gggggw
+wg*gggggw
 wgggggggw
 wwwwwwwww`, // inverted 5 2,10
    map`
 wwwwwwwww
-w6666666w
-w6666696w
-wk666696w
-w6666696w
-w6666666w
+w$$$$$$$w
+w$$$$$%$w
+wk$$$$%$w
+w$$$$$%$w
+w$$$$$$$w
 wwwwwwwww`, // inverted 5 2,11
    map`
 wwwwwwwwwww
 wwwwggwgggw
-wwg8ggwgggw
+wwg*ggwgggw
 wpwwggwgggw
 wwwwwgwgggw
 wwwwggwgggw
-wg8gggwgggw
+wg*gggwgggw
 wwwwwwwwwww`, // inverted 6 2,12
    map`
 wwwwwwwwwww
-wwww96w666w
-wzzw66w666w
-wkzz66w666w
-wzwww6w666w
-wzww66w666w
-w66669w666w
+wwww%$w$$$w
+wzzw$$w$$$w
+wkzz$$w$$$w
+wzwww$w$$$w
+wzww$$w$$$w
+w$$$$%w$$$w
 wwwwwwwwwww`, // inverted 6 2,13
    map`
 wwwwwwwwwww
-wg8gggggggw
-wwwwwwwwwgw
-wpggggggssw
-wgsshsssssw
+wggggwggggw
+wg*ggggwggw
+wwwwwwwwggw
+wpggwwwwggw
 wgssssssssw
-wsssssssshw
+wgssssssssw
+wgssssssssw
 wwwwwwwwwww`, // inverted 7 2,14
    map`
 wwwwwwwwwww
-w666666669w
-wzzzzzzzz6w
-wk66666666w
-w666666666w
-w666666666w
-w666666666w
+w$$$$z$$$%w
+w$$$$$$z$$w
+wzzzzzzz$$w
+wk$$zzzz$$w
+w$$$$$$$$$w
+w$$$$$$$$$w
+w$$$$$$$$$w
 wwwwwwwwwww`, // inverted 7 2,15
    map`
 wwwwwwwww
-w0000000w
-w0000000w
-Bp00000ew
-w0000000w
-w0000000w
+w&&&&&&&w
+w&&&&&&&w
+Bp&&&&&ew
+w&&&&&&&w
+w&&&&&&&w
 wwwwwwwww`
   ],
   [map`
@@ -963,7 +1147,7 @@ wgwwwwwwgw
 wggggggggw
 wwww""wwww`, // maze
     map`
-wwww'wwww
+9www'wwww
 wl[]gtgmw
 wg{}ggtgw
 ;gffpmgg:
@@ -1073,8 +1257,20 @@ onInput("l", () => {
     }
   } else {
     setMap(levels[levelI][levelJ]);
+    updateHealthTile();
   }
 });
+
+function updateHealthTile() {
+  if(!mazeGemGotten) { // 3 health
+    console.log(getMapWidth()-1);
+    clearTile(0, 0);
+    addSprite(0, 0, `${playerHealth+6}`);
+  } else { // 5 health
+    clearTile(0, 0);
+    addSprite(0, 0, `${playerHealth}`);    
+  }
+}
 
 function invert() {
   let nowX, nowY;
@@ -1084,6 +1280,7 @@ function invert() {
     inverted = false;
     levelJ--;
     setMap(levels[levelI][levelJ]);
+    updateHealthTile();
     getFirst(player).remove();
     addSprite(nowX, nowY, player);
 
@@ -1103,6 +1300,7 @@ function invert() {
       console.log(pushableList);
     }
     setMap(levels[levelI][levelJ]);
+    updateHealthTile();
     getFirst(invertedPlayer).remove();
     addSprite(nowX, nowY, invertedPlayer);
   }
@@ -1134,6 +1332,8 @@ function bulletEnemyKill(bulletType, enemyType) {
         if (levelI === butcheryCoords[0] && levelJ === butcheryCoords[1]) {
           butcheryScore += enemyScoreMap[enemyType];
           console.log(enemyScoreMap[enemyType]);
+          console.log(`The enemy is ${enemyType}`)
+          console.log(`The entire table is ${enemyScoreMap}`);
           let options = { y: 15, color: color`3` };
           texts.push([`The Butchery, ${butcheryScore}/${butcheryMax}`, options]);
           texts = texts.filter(n => n[0] !== `The Butchery, ${butcheryScore-enemyScoreMap[enemyType]}/${butcheryMax}`);
@@ -1146,6 +1346,12 @@ function bulletEnemyKill(bulletType, enemyType) {
             sleepyGhoulImmuneLevels.push([3, 3]);
             skeletonImmuneLevels.push([3, 3]);
             butcheryGemGotten = true;
+            if(mazeGemGotten) {
+              playerHealth = 5;
+            } else {
+              playerHealth = 3;
+            }
+            updateHealthTile();
           }
         }
         sprite.remove();
@@ -1176,10 +1382,20 @@ setInterval(() => {
   moveBullets(bulletDown);
 }, 100);
 
+let count = 0;
 // shoot interval
 setInterval(() => {
-  canShootBullet = true;
-}, 300);
+  // Reward for butchery mechanism
+  if(!butcheryGemGotten) {
+    if(count == 0)
+      count ++;
+    else{
+      count = 0;
+      canShootBullet = true;
+    }
+  } else 
+      canShootBullet = true;
+}, 150);
 
 function getValidRandomCoords() {
   let randomX = getRandomInt(1, getMapWidth() - 3);
@@ -1315,21 +1531,42 @@ function xAndYCoordMotionEnemy(enemyType) {
     if (playerX === enemy.x) {
       if (playerY > enemy.y) enemy.y++;
       else if (playerY < enemy.y) enemy.y--;
-      //else if(playerY === enemy.y) console.log("player dead");
-    } else if (playerY === enemy.y) {
+      else if(playerY === enemy.y) {
+          if(playerHealth>0) playerHealth--;updateHealthTile();
+          if(playerHealth < 1){
+            //DEAD!
+            // dont do anything now for debugging
+          }
+        }    } else if (playerY === enemy.y) {
       if (playerX > enemy.x) enemy.x++;
       else if (playerX < enemy.x) enemy.x--;
-      //else if(playerX === enemy.x) console.log("player dead");
-    } else {
+      else if(playerY === enemy.y) {
+          if(playerHealth>0) playerHealth--;updateHealthTile();
+          if(playerHealth < 1){
+            //DEAD!
+            // dont do anything now for debugging
+          }
+        }    } else {
       let xOrY = getRandomInt(0, 1);
       if (xOrY === 0) {
         if (playerX > enemy.x) enemy.x++;
         else if (playerX < enemy.x) enemy.x--;
-        //else if(playerX === enemy.x) console.log("player dead");
-      } else {
+        else if(playerY === enemy.y) {
+          if(playerHealth>0) playerHealth--;updateHealthTile();
+          if(playerHealth < 1){
+            //DEAD!
+            // dont do anything now for debugging
+          }
+        }      } else {
         if (playerY > enemy.y) enemy.y++;
         else if (playerY < enemy.y) enemy.y--;
-        //else if(playerY === enemy.y) console.log("player dead");
+        else if(playerY === enemy.y) {
+          if(playerHealth>0) playerHealth--;updateHealthTile();
+          if(playerHealth < 1){
+            //DEAD!
+            // dont do anything now for debugging
+          }
+        }
       }
     }
     bulletEnemyKill(bulletLeft, enemyType);
@@ -1441,17 +1678,23 @@ afterInput(() => {
     levelI = initI;
     levelJ=initJ;
     setMap(levels[levelI][levelJ])
-    console.log("Silence integrated debugging tool", levelI)
+    updateHealthTile();
   }
+
   if (di !== 0 || dj !== 0) {
     // ALl the inits as well
     initAll();
-    if (levelI === mazeEnd[0] && levelJ === mazeEnd[1] && !mazeGemGotten) {
+    console.log(`${levelI}, ${levelJ}`);
+    console.log(`${mazeEndCoords[0]}, ${mazeEndCoords[1]}`);
+    if (levelI === mazeEndCoords[0] && levelJ === mazeEndCoords[1] && !mazeGemGotten) {
       gemsCollected++;
       mazeGemGotten = true;
+      playerHealth = 5;
+      updateHealthTile();
     }
 
     setMap(levels[levelI][levelJ]);
+    updateHealthTile();
     if (levelI === initI && levelJ === initJ) { // player just entered the starting room again
       if (di === -1) { // went down, so spawn on up
         getFirst(player).x = 4;
