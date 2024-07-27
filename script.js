@@ -25,6 +25,8 @@ const bulletUp = "^";
 const bulletDown = "v";
 const ghoulLeft = "h";
 const ghoulRight = "o";
+const babyGhoulLeft = "H";
+const babyGhoulRight = "O";
 const sleepyGhoul = "s";
 const wall = "w";
 const flower1 = "l";
@@ -40,7 +42,7 @@ const invertedGrass = "$";
 const invertedBrick = "z";
 const invertedButton = "%";
 const pushable = "*";
-const backToStartTper = "B";
+const backToStartTper = "+";
 const health53 = "3";
 const health51 = "1";
 const health52 = "2";
@@ -51,16 +53,25 @@ const health30 = "6";
 const health31 = "7";
 const health32 = "8";
 const health33 = "9";
+const bootlegBulletLeft = "A";
+const bootlegBulletRight = "B";
+const bootlegBulletUp = "C";
+const bootlegBulletDown = "D";
 
 const bulletVels = {
   ">": [1, 0],
   "<": [-1, 0],
   "^": [0, -1],
-  "v": [0, 1]
+  "v": [0, 1],
+  "B": [1,0],
+  "A": [1,0],
+  "C": [0,-1],
+  "D": [0,1]
 };
 
 const enemies = [
   ghoulLeft, ghoulRight,
+  babyGhoulLeft, babyGhoulRight,
   sleepyGhoul,
   skeletonLeft, skeletonRight, skeletonArrow
 ];
@@ -68,12 +79,14 @@ const enemies = [
 const butcheryMax = 10;
 
 const enemyScoreMap = {
-  'h': 1,
-  'o': 1,
-  's': 2,
-  '!': 2,
-  '@': 2,
-  '#': 1
+  "H": 2,
+  "O": 2,
+  "h": 1,
+  "o": 1,
+  "s": 2,
+  "!": 2,
+  "@": 2,
+  "#": 1,
 };
 
 const initI = 3;
@@ -82,9 +95,12 @@ const butcheryCoords = [3, 3];
 const mazeEndCoords = [1, 0];
 const inverterStart = [2, 2];
 const inverters = [[2,2],[2,3],[2,4],[2,5],[2,6],[2,7],[2,8],[2,9],[2,10],[2,11],[2,12],[2,13],[2,14],[2,15]];
+const inverterEnd = [2,15];
 
+// Gems declaration
 let mazeGemGotten = false;
 let butcheryGemGotten = false;
+let inverterGemGotten = false;
 
 const PLAYER_WALK_SPEED = 1;
 
@@ -101,6 +117,9 @@ let sleepyGhoulCounter = 0;
 
 let skeletonCounter = 0;
 let skeletonCounterMax = 100;
+
+let babyGhoulCounter = 0;
+let babyGhoulCounterMax = 50;
 
 // have text?(needed for clearText shenanigins in afterMovement in room 0, 1
 let texts = [];
@@ -145,10 +164,25 @@ const skeletonImmuneLevels = [
   [2,16]
 ];
 
+const babyGhoulImmuneLevels = [
+  [0, 3],
+  [1, 0],
+  [1, 1],
+  [1, 2],
+  [2, 0],
+  [2, 1],
+  [3, 0],
+  [3, 1],
+  [2, 2],
+  [2, 3],
+  [2,16]
+]
+
 for (let level of inverters) {
   ghoulImmuneLevels.push(level);
   sleepyGhoulImmuneLevels.push(level);
   skeletonImmuneLevels.push(level);
+  babyGhoulImmuneLevels.push(level);
 }
 
 let butcheryScore = 0;
@@ -320,6 +354,74 @@ setLegend(
 0LL0L11011101110
 0LL0LLL011101110
 0000000000000000`],
+  [bootlegBulletLeft, bitmap`
+................
+................
+................
+................
+....000000000...
+....033333330...
+....033333330...
+....033333330...
+....033333330...
+....033333330...
+....033333330...
+....033333330...
+....000000000...
+................
+................
+................`],
+  [bootlegBulletRight, bitmap`
+................
+................
+................
+................
+....000000000...
+....033333330...
+....033333330...
+....033333330...
+....033333330...
+....033333330...
+....033333330...
+....033333330...
+....000000000...
+................
+................
+................`],
+  [bootlegBulletUp, bitmap`
+................
+................
+................
+................
+....000000000...
+....033333330...
+....033333330...
+....033333330...
+....033333330...
+....033333330...
+....033333330...
+....033333330...
+....000000000...
+................
+................
+................`],
+  [bootlegBulletDown, bitmap`
+................
+................
+................
+................
+....000000000...
+....033333330...
+....033333330...
+....033333330...
+....033333330...
+....033333330...
+....033333330...
+....033333330...
+....000000000...
+................
+................
+................`],
   [bulletRight, bitmap`
 ................
 ................
@@ -456,6 +558,40 @@ C.2.1222LLL1....
 ..1211..11.121..
 ..111..11..11...
 ..........11....`],
+  [babyGhoulLeft, bitmap`
+................
+.....1111.......
+....122221......
+....1222221.....
+....1727221.....
+...11222221.....
+...12222221.....
+...12222221.....
+...12222221.....
+...12222251.....
+...11222521.....
+....1111111.....
+.....11..111....
+......11..112...
+................
+................`],
+  [babyGhoulRight, bitmap`
+................
+.......1111.....
+......122221....
+.....1222221....
+.....1227271....
+.....12222211...
+.....12222221...
+.....12222221...
+.....12222221...
+.....15222221...
+.....12522211...
+.....1111111....
+....111..11.....
+...211..11......
+................
+................`],
   [sleepyGhoul, bitmap`
 ..........666666
 .....111111...6.
@@ -1117,7 +1253,7 @@ wwwwwwwwwww`, // inverted 7 2,15
 wwwwwwwww
 w&&&&&&&w
 w&&&&&&&w
-Bp&&&&&ew
++p&&&&&ew
 w&&&&&&&w
 w&&&&&&&w
 wwwwwwwww`
@@ -1217,6 +1353,9 @@ onInput("i", () => {
       addSprite(getFirst(player).x, getFirst(player).y - 1, bulletUp);
       canShootBullet = false;
       checkBulletEnemyKillAll(bulletUp);
+      if(inverterGemGotten){
+        shootBootlegBullet(0, -1);
+      }
     }
   } else {
     invert();
@@ -1229,6 +1368,9 @@ onInput("j", () => {
       addSprite(getFirst(player).x - 1, getFirst(player).y, bulletLeft);
       canShootBullet = false;
       checkBulletEnemyKillAll(bulletLeft);
+      if(inverterGemGotten){
+        shootBootlegBullet(-1, 0);
+      }
     }
   } else {
     invert();
@@ -1241,6 +1383,9 @@ onInput("k", () => {
       addSprite(getFirst(player).x, getFirst(player).y + 1, bulletDown);
       canShootBullet = false;
       checkBulletEnemyKillAll(bulletDown);
+      if(inverterGemGotten){
+        shootBootlegBullet(0, 1);
+      }
 
     }
   } else {
@@ -1254,12 +1399,54 @@ onInput("l", () => {
       addSprite(getFirst(player).x + 1, getFirst(player).y, bulletRight);
       canShootBullet = false;
       checkBulletEnemyKillAll(bulletRight);
+      if(inverterGemGotten){
+        shootBootlegBullet(1, 0);
+      }
     }
   } else {
     setMap(levels[levelI][levelJ]);
     updateHealthTile();
   }
 });
+
+function shootBootlegBullet(dx, dy) { // dx and dy so we can avoid them
+  changeYorX = getRandomInt(0, 1);
+  if(changeYorX) {
+    // Change X
+    let change = getRandomInt(0, 1);
+
+    if(change === 0) {
+      if(-1 === dx) {
+        shootBootlegBullet(dx, dy);
+        return;
+      }
+      addSprite(getFirst(player).x - 1, getFirst(player).y, bootlegBulletLeft);
+    } else {
+      if(1 === dx) {
+        shootBootlegBullet(dx, dy);
+        return;
+      }
+      addSprite(getFirst(player).x + 1, getFirst(player).y, bootlegBulletRight);
+    }
+  } else {
+    // Change Y
+    let change = getRandomInt(0, 1);
+
+    if(change === 0) {
+      if(-1 === dy) {
+        shootBootlegBullet(dx, dy);
+        return;
+      }
+      addSprite(getFirst(player).x, getFirst(player).y-1, bootlegBulletDown);
+    } else {
+      if(1 === dy) {
+        shootBootlegBullet(dx, dy);
+        return;
+      }
+      addSprite(getFirst(player).x, getFirst(player).y+1, bootlegBulletUp);
+    }
+  }
+}
 
 function updateHealthTile() {
   if(!mazeGemGotten) { // 3 health
@@ -1345,6 +1532,7 @@ function bulletEnemyKill(bulletType, enemyType) {
             ghoulImmuneLevels.push([3, 3]);
             sleepyGhoulImmuneLevels.push([3, 3]);
             skeletonImmuneLevels.push([3, 3]);
+            babyGhoulImmuneLevels.push([3,3]);
             butcheryGemGotten = true;
             if(mazeGemGotten) {
               playerHealth = 5;
@@ -1359,19 +1547,26 @@ function bulletEnemyKill(bulletType, enemyType) {
     });
   });
 }
+
+function checkAllBulletKillAllEnemy() {
+  for(let bulletType in bulletVels) {
+    checkBulletEnemyKillAll(bulletType);
+  }
+}
+
 // Function to handle bullet movement
 function moveBullets(bulletType) {
   getAll(bulletType).forEach((bullet) => {
     bullet.x += bulletVels[bulletType][0];
     bullet.y += bulletVels[bulletType][1];
 
-    if (bullet.y <= 0 && bulletType == "^") bullet.remove();
-    if (bullet.y >= getMapHeight() - 2 && bulletType == "v") bullet.remove();
-    if (bullet.x <= 0 && bulletType == "<") bullet.remove();
-    if (bullet.x >= getMapWidth() - 1 && bulletType == ">") bullet.remove();
+    if (bullet.y <= 0) bullet.remove();
+    if (bullet.y >= getMapHeight() - 2) bullet.remove();
+    if (bullet.x <= 0) bullet.remove();
+    if (bullet.x >= getMapWidth() - 1) bullet.remove();
   });
 
-  checkBulletEnemyKillAll();
+  checkAllBulletKillAllEnemy();
 }
 
 // Bullet logic
@@ -1380,6 +1575,11 @@ setInterval(() => {
   moveBullets(bulletRight);
   moveBullets(bulletUp);
   moveBullets(bulletDown);
+
+  moveBullets(bootlegBulletLeft);
+  moveBullets(bootlegBulletRight);
+  moveBullets(bootlegBulletUp);
+  moveBullets(bootlegBulletDown);
 }, 100);
 
 let count = 0;
@@ -1447,6 +1647,35 @@ function manageGhoulSpawns() {
       if (ghoulDifficultyIncreaser >= 6) {
         ghoulDifficultyIncreaser = 0;
         difficultyGhoulSpawn += 3;
+      }
+    }
+  }
+}
+
+function manageBabyGhoulSpawns() {
+  let canSpawn = true;
+  babyGhoulImmuneLevels.forEach(ij => {
+    if (levelI === ij[0] && levelJ === ij[1]) {
+      canSpawn = false;
+    }
+  });
+
+  if (canSpawn) {
+    babyGhoulCounter++;
+    if (babyGhoulCounter > babyGhoulCounterMax) {
+      babyGhoulCounter = 0;
+      let randomX = getRandomInt(1, getMapWidth() - 3);
+      while (randomX === getFirst(player).x) {
+        randomX = getRandomInt(1, getMapWidth() - 3);
+      }
+      let randomY = getRandomInt(1, getMapHeight() - 3);
+      while (randomY === getFirst(player).y) {
+        randomY = getRandomInt(1, getMapHeight() - 3);
+      }
+      if (getFirst(player).x - randomX > 0) {
+        addSprite(randomX, randomY, babyGhoulRight);
+      } else {
+        addSprite(randomX, randomY, babyGhoulLeft);
       }
     }
   }
@@ -1522,6 +1751,7 @@ setInterval(() => {
   manageGhoulSpawns();
   manageSleepyGhoulSpawns();
   manageSkeletonSpawns();
+  manageBabyGhoulSpawns();
 }, 100);
 
 function xAndYCoordMotionEnemy(enemyType) {
@@ -1537,7 +1767,8 @@ function xAndYCoordMotionEnemy(enemyType) {
             //DEAD!
             // dont do anything now for debugging
           }
-        }    } else if (playerY === enemy.y) {
+        }    
+    } else if (playerY === enemy.y) {
       if (playerX > enemy.x) enemy.x++;
       else if (playerX < enemy.x) enemy.x--;
       else if(playerY === enemy.y) {
@@ -1585,6 +1816,12 @@ setInterval(() => {
   xAndYCoordMotionEnemy(ghoulRight);
 }, 400);
 
+// Baby Ghoul Interval
+setInterval(() => {
+  xAndYCoordMotionEnemy(babyGhoulLeft);
+  xAndYCoordMotionEnemy(babyGhoulRight);
+}, 200);
+
 // Sleepy ghoul interval
 setInterval(() => {
   getAll(sleepyGhoul).forEach((currentGhoul) => {
@@ -1597,6 +1834,12 @@ setInterval(() => {
       } else if (playerY < currentGhoul.y) {
         bulletEnemyKill(bulletDown, sleepyGhoul);
         currentGhoul.y--;
+      } else {
+          if(playerHealth>0) playerHealth--;updateHealthTile();
+          if(playerHealth < 1){
+            //DEAD!
+            // dont do anything now for debugging
+          }        
       }
     } else if (playerY === currentGhoul.y) {
       if (playerX > currentGhoul.x) {
@@ -1605,6 +1848,12 @@ setInterval(() => {
       } else if (playerX < currentGhoul.x) {
         bulletEnemyKill(bulletRight, sleepyGhoul);
         currentGhoul.x--;
+      } else {
+          if(playerHealth>0) playerHealth--;updateHealthTile();
+          if(playerHealth < 1){
+            //DEAD!
+            // dont do anything now for debugging
+          }
       }
     }
   });
@@ -1618,9 +1867,24 @@ function spawnskeletonArrow(skeleton) {
 setInterval(() => {
   getAll(skeletonLeft).forEach(skeleton => {
     spawnskeletonArrow(skeleton);
+    if(getFirst(player).x === skeleton.x && getFirst(player).y === skeleton.Y) {
+      if(playerHealth>0) playerHealth--;updateHealthTile();
+      if(playerHealth < 1){
+        //DEAD!
+        // dont do anything now for debugging
+      }
+    }
   });
   getAll(skeletonRight).forEach(skeleton => {
     spawnskeletonArrow(skeleton);
+
+      if(getFirst(player).x === skeleton.x && getFirst(player).y === skeleton.Y) {
+      if(playerHealth>0) playerHealth--;updateHealthTile();
+      if(playerHealth < 1){
+        //DEAD!
+        // dont do anything now for debugging
+      }
+    }
   });
 }, 1500);
 
@@ -1635,6 +1899,11 @@ setInterval(() => {
   checkBulletEnemyKillAll(bulletRight);
   checkBulletEnemyKillAll(bulletUp);
   checkBulletEnemyKillAll(bulletDown);
+  
+  checkBulletEnemyKillAll(bootlegBulletLeft);
+  checkBulletEnemyKillAll(bootlegBulletRight);
+  checkBulletEnemyKillAll(bootlegBulletUp);
+  checkBulletEnemyKillAll(bootlegBulletDown);
 }, 100);
 
 let di = 0;
@@ -1674,7 +1943,12 @@ afterInput(() => {
   }
   levelI += di;
   levelJ += dj;
-  if(tilesWith(player, backToStartTper).length!== 0) {
+
+  if(levelI === inverterEnd[0] && levelJ === inverterEnd[1]){
+    inverterGemGotten = true;
+  }
+  
+  if(tilesWith(player, backToStartTper).length !== 0) {
     levelI = initI;
     levelJ=initJ;
     setMap(levels[levelI][levelJ])
