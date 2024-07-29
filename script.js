@@ -64,16 +64,21 @@ const bootlegBulletDown = "D";
 const crackedTiles1 = "E";
 const crackedTiles2 = "F";
 const crackedTiles3 = "G";
+const nuclearBarrel = "N";
+const nuclearSplashLeft = "I";
+const nuclearSplashRight = "J";
+const nuclearSplashUp = "K";
+const nuclearSplashDown = "L";
 
 const bulletVels = {
   ">": [1, 0],
   "<": [-1, 0],
   "^": [0, -1],
   "v": [0, 1],
-  "B": [1,0],
-  "A": [1,0],
-  "C": [0,-1],
-  "D": [0,1]
+  "B": [1, 0],
+  "A": [1, 0],
+  "C": [0, -1],
+  "D": [0, 1]
 };
 
 const enemies = [
@@ -101,11 +106,26 @@ const initJ = 2;
 const butcheryCoords = [3, 3];
 const mazeEndCoords = [1, 0];
 const inverterStart = [2, 2];
-const inverters = [[2,2],[2,3],[2,4],[2,5],[2,6],[2,7],[2,8],[2,9],[2,10],[2,11],[2,12],[2,13],[2,14],[2,15]];
-const inverterEnd = [2,16];
-const warningRoom = [4,2];
-const tutorialFinalBossRoom = [4,3];
-const bossRoom = [4,4];
+const inverters = [
+  [2, 2],
+  [2, 3],
+  [2, 4],
+  [2, 5],
+  [2, 6],
+  [2, 7],
+  [2, 8],
+  [2, 9],
+  [2, 10],
+  [2, 11],
+  [2, 12],
+  [2, 13],
+  [2, 14],
+  [2, 15]
+];
+const inverterEnd = [2, 16];
+const warningRoom = [4, 2];
+const tutorialFinalBossRoom = [4, 3];
+const bossRoom = [4, 4];
 
 // Gems declaration
 let mazeGemGotten = false;
@@ -136,6 +156,9 @@ let texts = [];
 
 let playerHealth = 3;
 
+const maxHouseHealth = 10;
+let houseHealth = maxHouseHealth;
+
 const ghoulImmuneLevels = [
   [0, 3],
   [1, 0],
@@ -147,7 +170,7 @@ const ghoulImmuneLevels = [
   [3, 1],
   [2, 2],
   [2, 3],
-  [2,16]
+  [2, 16]
 ]
 const sleepyGhoulImmuneLevels = [
   [0, 3],
@@ -159,7 +182,7 @@ const sleepyGhoulImmuneLevels = [
   [3, 0],
   [3, 1],
   [initI, initJ],
-  [2,16]
+  [2, 16]
 ];
 const skeletonImmuneLevels = [
   [0, 2],
@@ -171,7 +194,7 @@ const skeletonImmuneLevels = [
   [3, 0],
   [3, 1],
   [initI, initJ],
-  [2,16]
+  [2, 16]
 ];
 
 const babyGhoulImmuneLevels = [
@@ -185,7 +208,7 @@ const babyGhoulImmuneLevels = [
   [3, 1],
   [2, 2],
   [2, 3],
-  [2,16]
+  [2, 16]
 ]
 
 for (let level of inverters) {
@@ -203,14 +226,112 @@ let inverted = false;
 
 let pushableList = [];
 let buttonCoords = {
-  '2,6':[[6,4]], // uninverted lvl coords!
-  '2,8':[[2,5]],
-  '2,10':[[6,2], [6,3], [6,4]],
-  '2,12':[[4,1],[5,6]],
-  '2,14':[[9,1]]
+  '2,6': [
+    [6, 4]
+  ], // uninverted lvl coords!
+  '2,8': [
+    [2, 5]
+  ],
+  '2,10': [
+    [6, 2],
+    [6, 3],
+    [6, 4]
+  ],
+  '2,12': [
+    [4, 1],
+    [5, 6]
+  ],
+  '2,14': [
+    [9, 1]
+  ]
 }
 
 setLegend(
+  [nuclearBarrel, bitmap`
+1110000000000111
+1L0DDDDDDDDDD0L1
+10DD44444444DD01
+1011DDDDDDDD1101
+1011111111111101
+1011111111111101
+10L1112222111L01
+101L12606021L101
+1011L206062L1101
+1011126060211101
+1011120606211101
+1011112222111101
+10L1111111111L01
+101L11111111L101
+1L01LLLLLLLL10L1
+1110000000000111`],
+  [nuclearSplashLeft, bitmap`
+................
+................
+................
+................
+...DDDDDDDDDD...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...DDDDDDDDDD...
+................
+................
+................`],
+  [nuclearSplashRight, bitmap`
+................
+................
+................
+................
+...DDDDDDDDDD...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...DDDDDDDDDD...
+................
+................
+................`],
+  [nuclearSplashUp, bitmap`
+................
+................
+................
+................
+...DDDDDDDDDD...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...DDDDDDDDDD...
+................
+................
+................`],
+  [nuclearSplashDown, bitmap`
+................
+................
+................
+................
+...DDDDDDDDDD...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...D44444444D...
+...DDDDDDDDDD...
+................
+................
+................`],
   [pushable, bitmap`
 0000000000000000
 0C666666666666C0
@@ -925,7 +1046,7 @@ CCCCCCCCCCCCCC01
 4664466446644664
 4664466446644664
 4444444444444444`],
-   [invertedBrick, bitmap`
+  [invertedBrick, bitmap`
 2222222222222222
 2399299929992972
 2399299929992992
@@ -959,7 +1080,7 @@ C333333333333330
 0666336666666660
 0666666666666660
 0000000000000000`],
-  [health55,bitmap`
+  [health55, bitmap`
 0000000000000000
 0777777777777770
 0777777777777770
@@ -976,7 +1097,7 @@ C333333333333330
 0773737733377770
 0773737737777770
 0000000000000000`],
-  [health54,bitmap`
+  [health54, bitmap`
 0000000000000000
 0777777777777770
 0777777777777770
@@ -993,7 +1114,7 @@ C333333333333330
 0773737733377770
 0773737737777770
 0000000000000000`],
-  [health53,bitmap`
+  [health53, bitmap`
 0000000000000000
 0777777777777770
 0777777777777770
@@ -1010,7 +1131,7 @@ C333333333333330
 0773737733377770
 0773737737777770
 0000000000000000`],
-  [health52,bitmap`
+  [health52, bitmap`
 0000000000000000
 0777777777777770
 0777777777777770
@@ -1027,7 +1148,7 @@ C333333333333330
 0773737733377770
 0773737737777770
 0000000000000000`],
-  [health51,bitmap`
+  [health51, bitmap`
 0000000000000000
 0777777777777770
 0777777777777770
@@ -1044,7 +1165,7 @@ C333333333333330
 07737377LLL77770
 07737377L7777770
 0000000000000000`],
-  [health50,bitmap`
+  [health50, bitmap`
 0000000000000000
 0777777777777770
 0777777777777770
@@ -1061,7 +1182,7 @@ C333333333333330
 077L7L77LLL77770
 077L7L77L7777770
 0000000000000000`],
-  [health33,bitmap`
+  [health33, bitmap`
 0000000000000000
 0777777777777770
 0777777777777770
@@ -1078,7 +1199,7 @@ C333333333333330
 0773737733377770
 0773737737777770
 0000000000000000`],
-  [health32,bitmap`
+  [health32, bitmap`
 0000000000000000
 0777777777777770
 0777777777777770
@@ -1095,7 +1216,7 @@ C333333333333330
 0773737733377770
 0773737737777770
 0000000000000000`],
-  [health31,bitmap`
+  [health31, bitmap`
 0000000000000000
 0777777777777770
 0777777777777770
@@ -1112,7 +1233,7 @@ C333333333333330
 07737377LLL77770
 07737377L7777770
 0000000000000000`],
-  [health30,bitmap`
+  [health30, bitmap`
 0000000000000000
 0777777777777770
 0777777777777770
@@ -1276,7 +1397,7 @@ w$$$z$$$:
 w$$$z$$$w
 w$$$z$$$w
 wwwwwwwww`, // inverter 1 2,3
-     map`
+    map`
 wwwwwwwww
 wggwwgggw
 wwwwgwggw
@@ -1284,7 +1405,7 @@ wpgwgwggw
 wwwwgwggw
 wwg.gwggw
 wwwwwwwww`, // inverter 1 2,4
-   map`
+    map`
 wwwwwwwww
 w$$www$$w
 w$$w$z$$w
@@ -1292,7 +1413,7 @@ wk$w$w$$:
 wwzwww$$w
 ww$w$w$$w
 wwwwwwwww`, // inverter 2 2,5
-   map`
+    map`
 wwwwwwwww
 wgggggggw
 wgggggggw
@@ -1300,7 +1421,7 @@ wpg*ggggw
 wgggggggw
 wgggggggw
 wwwwwwwww`, // inverter 3 2,6
-   map`
+    map`
 wwwwwwwww
 w$$$$$$$w
 w$$$$$$$w
@@ -1308,7 +1429,7 @@ wk$$$$$$w
 w$$$$$%$w
 w$$$$$$$w
 wwwwwwwww`, // inverter 3 2,7
-   map`
+    map`
 wwwwwwwww
 wggwgwggw
 wwgwgwggw
@@ -1316,7 +1437,7 @@ wp*ggwggw
 wwgwwwggw
 wwggggggw
 wwwwwwwww`, // inverted 4 2,8
-   map`
+    map`
 wwwwwwwww
 w$$w$w$$w
 wzww$w$$w
@@ -1324,7 +1445,7 @@ wk$$$w$$:
 ww$www$$w
 ww%w$$$$w
 wwwwwwwww`, //inverted 4 2,9
-   map`
+    map`
 wwwwwwwww
 wgggggggw
 wg*gggggw
@@ -1332,7 +1453,7 @@ wp*gggggw
 wg*gggggw
 wgggggggw
 wwwwwwwww`, // inverted 5 2,10
-   map`
+    map`
 wwwwwwwww
 w$$$$$$$w
 w$$$$$%$w
@@ -1340,7 +1461,7 @@ wk$$$$%$w
 w$$$$$%$w
 w$$$$$$$w
 wwwwwwwww`, // inverted 5 2,11
-   map`
+    map`
 wwwwwwwwwww
 wwwwggwgggw
 wwg*ggwgggw
@@ -1349,7 +1470,7 @@ wwwwwgwgggw
 wwwwggwgggw
 wg*gggwgggw
 wwwwwwwwwww`, // inverted 6 2,12
-   map`
+    map`
 wwwwwwwwwww
 wwww%$w$$$w
 wzzw$$w$$$w
@@ -1358,7 +1479,7 @@ wzwww$w$$$w
 wzww$$w$$$w
 w$$$$%w$$$w
 wwwwwwwwwww`, // inverted 6 2,13
-   map`
+    map`
 wwwwwwwwwww
 wggggwggggw
 wg*ggggwggw
@@ -1368,7 +1489,7 @@ wgssssssssw
 wgssssssssw
 wgssssssssw
 wwwwwwwwwww`, // inverted 7 2,14
-   map`
+    map`
 wwwwwwwwwww
 w$$$$z$$$%w
 w$$$$$$z$$w
@@ -1378,7 +1499,7 @@ w$$$$$$$$$w
 w$$$$$$$$$w
 w$$$$$$$$$w
 wwwwwwwwwww`, // inverted 7 2,15
-   map`
+    map`
 wwwwwwwww
 w&&&&&&&w
 w&&&&&&&w
@@ -1429,8 +1550,8 @@ wbggggblw
 wwwwwwwww`
   ],
   [``,
-   ``,
-   map`
+    ``,
+    map`
 wwwwwwwww
 wgggggggw
 wgggggggw
@@ -1440,23 +1561,34 @@ wgggggggw
 wgggggggw
 wgggpgggw
 wwww"wwww`,
-   map`
+    map`
+wwwwwwwwwww
+wgggggggggw
+wgggggggggw
+wgggggggggw
+;pgggggggg:
+wgggggggggw
+wgggggggggw
+wgggggggggw
+wwwwwwwwwww`,
+    map`
 wwwwwwwwwww
 wEGFEGFEGFw
 wFPQFEGFEGw
-wERSEGFEGFw
+wERSEGNEGFw
 wFEGFEGFEGw
 wEGFEGFEGFw
 wFEGFEGFEGw
 wEGFEpFEGFw
-wwwwwwwwwww`]
+wwwwwwwwwww`
+  ]
 ];
 
-for(let j = 0; j < levels[4].length; j++) {
-  ghoulImmuneLevels.push([4,j]);
-  sleepyGhoulImmuneLevels.push([4,j]);
-  skeletonImmuneLevels.push([4,j]);
-  babyGhoulImmuneLevels.push([4,j]);
+for (let j = 0; j < levels[4].length; j++) {
+  ghoulImmuneLevels.push([4, j]);
+  sleepyGhoulImmuneLevels.push([4, j]);
+  skeletonImmuneLevels.push([4, j]);
+  babyGhoulImmuneLevels.push([4, j]);
 }
 
 function getMapWidth() {
@@ -1511,7 +1643,7 @@ onInput("i", () => {
       addSprite(getFirst(player).x, getFirst(player).y - 1, bulletUp);
       canShootBullet = false;
       checkBulletEnemyKillAll(bulletUp);
-      if(inverterGemGotten){
+      if (inverterGemGotten) {
         shootBootlegBullet(0, -1);
       }
     }
@@ -1526,7 +1658,7 @@ onInput("j", () => {
       addSprite(getFirst(player).x - 1, getFirst(player).y, bulletLeft);
       canShootBullet = false;
       checkBulletEnemyKillAll(bulletLeft);
-      if(inverterGemGotten){
+      if (inverterGemGotten) {
         shootBootlegBullet(-1, 0);
       }
     }
@@ -1541,7 +1673,7 @@ onInput("k", () => {
       addSprite(getFirst(player).x, getFirst(player).y + 1, bulletDown);
       canShootBullet = false;
       checkBulletEnemyKillAll(bulletDown);
-      if(inverterGemGotten){
+      if (inverterGemGotten) {
         shootBootlegBullet(0, 1);
       }
 
@@ -1557,7 +1689,7 @@ onInput("l", () => {
       addSprite(getFirst(player).x + 1, getFirst(player).y, bulletRight);
       canShootBullet = false;
       checkBulletEnemyKillAll(bulletRight);
-      if(inverterGemGotten){
+      if (inverterGemGotten) {
         shootBootlegBullet(1, 0);
       }
     }
@@ -1569,18 +1701,18 @@ onInput("l", () => {
 
 function shootBootlegBullet(dx, dy) { // dx and dy so we can avoid them
   changeYorX = getRandomInt(0, 1);
-  if(changeYorX) {
+  if (changeYorX) {
     // Change X
     let change = getRandomInt(0, 1);
 
-    if(change === 0) {
-      if(-1 === dx) {
+    if (change === 0) {
+      if (-1 === dx) {
         shootBootlegBullet(dx, dy);
         return;
       }
       addSprite(getFirst(player).x - 1, getFirst(player).y, bootlegBulletLeft);
     } else {
-      if(1 === dx) {
+      if (1 === dx) {
         shootBootlegBullet(dx, dy);
         return;
       }
@@ -1590,30 +1722,30 @@ function shootBootlegBullet(dx, dy) { // dx and dy so we can avoid them
     // Change Y
     let change = getRandomInt(0, 1);
 
-    if(change === 0) {
-      if(-1 === dy) {
+    if (change === 0) {
+      if (-1 === dy) {
         shootBootlegBullet(dx, dy);
         return;
       }
-      addSprite(getFirst(player).x, getFirst(player).y-1, bootlegBulletDown);
+      addSprite(getFirst(player).x, getFirst(player).y - 1, bootlegBulletDown);
     } else {
-      if(1 === dy) {
+      if (1 === dy) {
         shootBootlegBullet(dx, dy);
         return;
       }
-      addSprite(getFirst(player).x, getFirst(player).y+1, bootlegBulletUp);
+      addSprite(getFirst(player).x, getFirst(player).y + 1, bootlegBulletUp);
     }
   }
 }
 
 function updateHealthTile() {
-  if(!mazeGemGotten) { // 3 health
-    console.log(getMapWidth()-1);
+  if (!mazeGemGotten) { // 3 health
+    console.log(getMapWidth() - 1);
     clearTile(0, 0);
     addSprite(0, 0, `${playerHealth+6}`);
   } else { // 5 health
     clearTile(0, 0);
-    addSprite(0, 0, `${playerHealth}`);    
+    addSprite(0, 0, `${playerHealth}`);
   }
 }
 
@@ -1630,7 +1762,7 @@ function invert() {
     addSprite(nowX, nowY, player);
 
     let pushables = getAll(pushable);
-    for(let i = 0; i < pushables.length; i++) {
+    for (let i = 0; i < pushables.length; i++) {
       pushables[i].remove();
       addSprite(pushableList[i][0], pushableList[i][1], pushable)
     }
@@ -1640,7 +1772,7 @@ function invert() {
     nowY = getFirst(player).y;
     inverted = true;
     levelJ++;
-    for(let pushable1 of getAll(pushable)) {
+    for (let pushable1 of getAll(pushable)) {
       pushableList.push([pushable1.x, pushable1.y]);
       console.log(pushableList);
     }
@@ -1651,9 +1783,9 @@ function invert() {
   }
 }
 
-function isInverter(){
-  for(let level of inverters) {
-    if(levelI === level[0] && levelJ === level[1]) return true;
+function isInverter() {
+  for (let level of inverters) {
+    if (levelI === level[0] && levelJ === level[1]) return true;
   }
   return false;
 }
@@ -1668,6 +1800,26 @@ function initAll() {
 
 function checkBulletEnemyKillAll(bulletType) {
   enemies.forEach(enemy => bulletEnemyKill(bulletType, enemy));
+  nuclearExplosionCheck(bulletType);
+}
+
+function nuclearExplosionCheck(bulletType) {
+  tilesWith(bulletType, nuclearBarrel).forEach(bulletBarrel => {
+    bulletBarrel.forEach(sprite => {
+      if (sprite._type === nuclearBarrel) { // only spawn splashes now
+        addSprite(sprite.x + 1, sprite.y, nuclearSplashRight);
+        addSprite(sprite.x - 1, sprite.y, nuclearSplashLeft);
+        addSprite(sprite.x, sprite.y + 1, nuclearSplashDown);
+        addSprite(sprite.x, sprite.y - 1, nuclearSplashUp);
+        let x = sprite.x;
+        let y = sprite.y;
+        addSprite(x, y, crackedTiles1);
+        sprite.remove();
+        return;
+      }
+      sprite.remove();
+    });
+  });
 }
 
 function bulletEnemyKill(bulletType, enemyType) {
@@ -1690,15 +1842,26 @@ function bulletEnemyKill(bulletType, enemyType) {
             ghoulImmuneLevels.push([3, 3]);
             sleepyGhoulImmuneLevels.push([3, 3]);
             skeletonImmuneLevels.push([3, 3]);
-            babyGhoulImmuneLevels.push([3,3]);
+            babyGhoulImmuneLevels.push([3, 3]);
             butcheryGemGotten = true;
-            if(mazeGemGotten) {
+            if (mazeGemGotten) {
               playerHealth = 5;
             } else {
               playerHealth = 3;
             }
             updateHealthTile();
           }
+        }
+
+        if (sprite === houseTopLeft2 || sprite === houseTopRight2 || sprite === houseBottomLeft2 || sprite === houseBottomRight2) {
+          houseHealth--;
+          texts = texts.filter(n => {
+            console.log(n);
+            n[0].includes("Progress")
+          });
+          addText(`Progress:${((maxHouseHealth-houseHealth)/maxHouseHealth)*100}`, { y: getMapHeight() - 1, color: color`C` });
+          texts.push([`Progress:${((maxHouseHealth-houseHealth)/maxHouseHealth)*100}`, { y: getMapHeight() - 1, color: color`C` }]);
+          return;
         }
         sprite.remove();
       }
@@ -1707,7 +1870,7 @@ function bulletEnemyKill(bulletType, enemyType) {
 }
 
 function checkAllBulletKillAllEnemy() {
-  for(let bulletType in bulletVels) {
+  for (let bulletType in bulletVels) {
     checkBulletEnemyKillAll(bulletType);
   }
 }
@@ -1744,15 +1907,15 @@ let count = 0;
 // shoot interval
 setInterval(() => {
   // Reward for butchery mechanism
-  if(!butcheryGemGotten) {
-    if(count == 0)
-      count ++;
-    else{
+  if (!butcheryGemGotten) {
+    if (count == 0)
+      count++;
+    else {
       count = 0;
       canShootBullet = true;
     }
-  } else 
-      canShootBullet = true;
+  } else
+    canShootBullet = true;
 }, 150);
 
 function getValidRandomCoords() {
@@ -1919,39 +2082,45 @@ function xAndYCoordMotionEnemy(enemyType) {
     if (playerX === enemy.x) {
       if (playerY > enemy.y) enemy.y++;
       else if (playerY < enemy.y) enemy.y--;
-      else if(playerY === enemy.y) {
-          if(playerHealth>0) playerHealth--;updateHealthTile();
-          if(playerHealth < 1){
-            //DEAD!
-            // dont do anything now for debugging
-          }
-        }    
+      else if (playerY === enemy.y) {
+        if (playerHealth > 0) playerHealth--;
+        updateHealthTile();
+        if (playerHealth < 1) {
+          //DEAD!
+          // dont do anything now for debugging
+        }
+      }
     } else if (playerY === enemy.y) {
       if (playerX > enemy.x) enemy.x++;
       else if (playerX < enemy.x) enemy.x--;
-      else if(playerY === enemy.y) {
-          if(playerHealth>0) playerHealth--;updateHealthTile();
-          if(playerHealth < 1){
-            //DEAD!
-            // dont do anything now for debugging
-          }
-        }    } else {
+      else if (playerY === enemy.y) {
+        if (playerHealth > 0) playerHealth--;
+        updateHealthTile();
+        if (playerHealth < 1) {
+          //DEAD!
+          // dont do anything now for debugging
+        }
+      }
+    } else {
       let xOrY = getRandomInt(0, 1);
       if (xOrY === 0) {
         if (playerX > enemy.x) enemy.x++;
         else if (playerX < enemy.x) enemy.x--;
-        else if(playerY === enemy.y) {
-          if(playerHealth>0) playerHealth--;updateHealthTile();
-          if(playerHealth < 1){
+        else if (playerY === enemy.y) {
+          if (playerHealth > 0) playerHealth--;
+          updateHealthTile();
+          if (playerHealth < 1) {
             //DEAD!
             // dont do anything now for debugging
           }
-        }      } else {
+        }
+      } else {
         if (playerY > enemy.y) enemy.y++;
         else if (playerY < enemy.y) enemy.y--;
-        else if(playerY === enemy.y) {
-          if(playerHealth>0) playerHealth--;updateHealthTile();
-          if(playerHealth < 1){
+        else if (playerY === enemy.y) {
+          if (playerHealth > 0) playerHealth--;
+          updateHealthTile();
+          if (playerHealth < 1) {
             //DEAD!
             // dont do anything now for debugging
           }
@@ -1993,11 +2162,12 @@ setInterval(() => {
         bulletEnemyKill(bulletDown, sleepyGhoul);
         currentGhoul.y--;
       } else {
-          if(playerHealth>0) playerHealth--;updateHealthTile();
-          if(playerHealth < 1){
-            //DEAD!
-            // dont do anything now for debugging
-          }        
+        if (playerHealth > 0) playerHealth--;
+        updateHealthTile();
+        if (playerHealth < 1) {
+          //DEAD!
+          // dont do anything now for debugging
+        }
       }
     } else if (playerY === currentGhoul.y) {
       if (playerX > currentGhoul.x) {
@@ -2007,11 +2177,12 @@ setInterval(() => {
         bulletEnemyKill(bulletRight, sleepyGhoul);
         currentGhoul.x--;
       } else {
-          if(playerHealth>0) playerHealth--;updateHealthTile();
-          if(playerHealth < 1){
-            //DEAD!
-            // dont do anything now for debugging
-          }
+        if (playerHealth > 0) playerHealth--;
+        updateHealthTile();
+        if (playerHealth < 1) {
+          //DEAD!
+          // dont do anything now for debugging
+        }
       }
     }
   });
@@ -2025,9 +2196,10 @@ function spawnskeletonArrow(skeleton) {
 setInterval(() => {
   getAll(skeletonLeft).forEach(skeleton => {
     spawnskeletonArrow(skeleton);
-    if(getFirst(player).x === skeleton.x && getFirst(player).y === skeleton.Y) {
-      if(playerHealth>0) playerHealth--;updateHealthTile();
-      if(playerHealth < 1){
+    if (getFirst(player).x === skeleton.x && getFirst(player).y === skeleton.Y) {
+      if (playerHealth > 0) playerHealth--;
+      updateHealthTile();
+      if (playerHealth < 1) {
         //DEAD!
         // dont do anything now for debugging
       }
@@ -2036,9 +2208,10 @@ setInterval(() => {
   getAll(skeletonRight).forEach(skeleton => {
     spawnskeletonArrow(skeleton);
 
-      if(getFirst(player).x === skeleton.x && getFirst(player).y === skeleton.Y) {
-      if(playerHealth>0) playerHealth--;updateHealthTile();
-      if(playerHealth < 1){
+    if (getFirst(player).x === skeleton.x && getFirst(player).y === skeleton.Y) {
+      if (playerHealth > 0) playerHealth--;
+      updateHealthTile();
+      if (playerHealth < 1) {
         //DEAD!
         // dont do anything now for debugging
       }
@@ -2057,7 +2230,7 @@ setInterval(() => {
   checkBulletEnemyKillAll(bulletRight);
   checkBulletEnemyKillAll(bulletUp);
   checkBulletEnemyKillAll(bulletDown);
-  
+
   checkBulletEnemyKillAll(bootlegBulletLeft);
   checkBulletEnemyKillAll(bootlegBulletRight);
   checkBulletEnemyKillAll(bootlegBulletUp);
@@ -2069,24 +2242,24 @@ let dj = 0;
 let shownText = false;
 afterInput(() => {
   // pushable button connection
-  if(buttonCoords[`${levelI},${levelJ}`] !== undefined) {
+  if (buttonCoords[`${levelI},${levelJ}`] !== undefined) {
     let buttonFlagWhole = true;
     let pushables = getAll(pushable);
-    for(let i = 0; i < pushables.length; i++) {
+    for (let i = 0; i < pushables.length; i++) {
       let targetButtonCoord = buttonCoords[`${levelI},${levelJ}`];
       let buttonFlag = false;
-      for(let coord of targetButtonCoord) {
-        if(pushables[i].x === coord[0] && pushables[i].y === coord[1] && pushables[i] !== undefined) {
+      for (let coord of targetButtonCoord) {
+        if (pushables[i].x === coord[0] && pushables[i].y === coord[1] && pushables[i] !== undefined) {
           buttonFlag = true;
           console.log("loging ", );
         }
       }
-      if(!buttonFlag) {
-          buttonFlagWhole = false;
+      if (!buttonFlag) {
+        buttonFlagWhole = false;
       }
     }
-    if(buttonFlagWhole) {
-        dj+=2;
+    if (buttonFlagWhole) {
+      dj += 2;
     }
   }
   // Player collisions
@@ -2102,16 +2275,16 @@ afterInput(() => {
   levelI += di;
   levelJ += dj;
 
-  if(levelI === inverterEnd[0] && levelJ === inverterEnd[1]){
+  if (levelI === inverterEnd[0] && levelJ === inverterEnd[1]) {
     inverterGemGotten = true;
-    if(mazeGemGotten) playerHealth = 5;
+    if (mazeGemGotten) playerHealth = 5;
     else playerHealth = 3;
     updateHealthTile();
   }
-  
-  if(tilesWith(player, backToStartTper).length !== 0) {
+
+  if (tilesWith(player, backToStartTper).length !== 0) {
     levelI = initI;
-    levelJ=initJ;
+    levelJ = initJ;
     setMap(levels[levelI][levelJ])
     updateHealthTile();
   }
@@ -2164,13 +2337,13 @@ afterInput(() => {
   dj = 0;
 
   let shownWarningText = false;
-  if(levelI === warningRoom[0] && levelJ === warningRoom[1]) {
-    if(!shownWarningText) {
+  if (levelI === warningRoom[0] && levelJ === warningRoom[1]) {
+    if (!shownWarningText) {
       console.log("120");
-      let options1 = { y:3, color: color`3` };
-      let options2 = {y:4, color:color`3`};
-      let options3 = {y:5, color:color`3`};
-      let options4 = {y:6, color:color`3`};
+      let options1 = { y: 3, color: color`3` };
+      let options2 = { y: 4, color: color`3` };
+      let options3 = { y: 5, color: color`3` };
+      let options4 = { y: 6, color: color`3` };
       addText("WARNING!", options1);
       addText("DEATH LIES AHEAD", options2);
       addText("ENTER AT", options3);
@@ -2188,5 +2361,35 @@ afterInput(() => {
     texts = texts.filter(n => n[0] !== "ENTER AT");
     texts = texts.filter(n => n[0] !== "YOUR OWN RISK");
     refreshText();
+  }
+
+  let shownTutText = false;
+  if (levelI === tutorialFinalBossRoom[0] && levelJ === tutorialFinalBossRoom[1]) {
+    if (!shownTutText) {
+      let options1 = { y: 3, color: color`3` };
+      let options2 = { y: 4, color: color`3` };
+      let options3 = { y: 5, color: color`3` };
+      let options4 = { y: 6, color: color`3` };
+      addText("HE IS TOO MIGHTY", options1);
+      addText("FOR YOUR BULLETS", options2);
+      addText("TURN BACK", options3);
+      addText("LAST CHANCE", options4);
+      texts.push(["HE IS TOO MIGHTY", options1]);
+      texts.push(["FOR YOUR BULLETS", options2]);
+      texts.push(["TURN BACK", options3]);
+      texts.push(["LAST CHANCE", options4]);
+      shownTutText = true;
+    }
+  } else {
+    texts = texts.filter(n => n[0] !== "HE IS TOO MIGHTY");
+    texts = texts.filter(n => n[0] !== "FOR YOUR BULLETS");
+    texts = texts.filter(n => n[0] !== "TURN BACK");
+    texts = texts.filter(n => n[0] !== "LAST CHANCE");
+    refreshText();
+  }
+  if (levelI === bossRoom[0] && levelJ === bossRoom[1]) {
+    addText(`Progress:${((maxHouseHealth-houseHealth)/maxHouseHealth)*100}`, { y: getMapHeight() - 1, color: color`C` });
+    texts.push([`Progress:${((maxHouseHealth-houseHealth)/maxHouseHealth)*100}`, { y: getMapHeight() - 1, color: color`C` }]);
+    console.log('ts');
   }
 });
