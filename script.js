@@ -19,6 +19,10 @@ const houseTopLeft = "[";
 const houseTopRight = "]";
 const houseBottomLeft = "{";
 const houseBottomRight = "}";
+const houseTopLeft2 = "P";
+const houseTopRight2 = "Q";
+const houseBottomLeft2 = "R";
+const houseBottomRight2 = "S";
 const bulletRight = ">";
 const bulletLeft = "<";
 const bulletUp = "^";
@@ -57,6 +61,9 @@ const bootlegBulletLeft = "A";
 const bootlegBulletRight = "B";
 const bootlegBulletUp = "C";
 const bootlegBulletDown = "D";
+const crackedTiles1 = "E";
+const crackedTiles2 = "F";
+const crackedTiles3 = "G";
 
 const bulletVels = {
   ">": [1, 0],
@@ -95,7 +102,10 @@ const butcheryCoords = [3, 3];
 const mazeEndCoords = [1, 0];
 const inverterStart = [2, 2];
 const inverters = [[2,2],[2,3],[2,4],[2,5],[2,6],[2,7],[2,8],[2,9],[2,10],[2,11],[2,12],[2,13],[2,14],[2,15]];
-const inverterEnd = [2,15];
+const inverterEnd = [2,16];
+const warningRoom = [4,2];
+const tutorialFinalBossRoom = [4,3];
+const bossRoom = [4,4];
 
 // Gems declaration
 let mazeGemGotten = false;
@@ -779,6 +789,74 @@ L10CCCCCCCCC0DDD
 110CCCCCCCCC0DDD
 000CCCCCCCCC04D4
 0000000000000444`],
+  [houseTopLeft2, bitmap`
+1111111111111110
+1LL2LLLLLLLLLL0C
+1LL2LLLLLLLLL0CC
+1LLL2LLLLLLL0CCC
+1LL2LLLLLLL0CCCC
+1L22LLLLLL0CCCCC
+12LLLLLLL0CCCCCC
+1LLLLLLL000CCCCC
+1LLLLLL0CC00CCCC
+1LLLLL0CCCCC0CCC
+1LLLL0C0000000CC
+1LLL0CCC0LL0CCCC
+1LL0CCCC0L20CCCC
+1L0CCCC000000CCC
+10CCCCCCCCCCCCCC
+0000000000000000`],
+  [houseTopRight2, bitmap`
+0111111111111111
+C0LLLLLLLLLL2LL1
+CC0LLLLLLLLL2LL1
+CCC0LLLLLLL2LLL1
+CCCC0LLLLLLL0LL1
+CCCCC0LLLLLL20L1
+CCCCCC0LLLLLLL21
+CCCCC000LLLLLL21
+CCCC00CC0LLLL2L1
+CCC0CCCCC0LLLLL1
+CC0000000C0LLLL1
+CCCC0LL0CCC0LLL1
+CCCC03L0CCCC0LL1
+CCC000000CCCC0L1
+CCCCCCCCCCCCCC01
+0000000000000000`],
+  [houseBottomLeft2, bitmap`
+11109CCCCCCCC033
+1LL0CCCCCCCCC093
+1LL0C2222222C039
+1L30C2C323C2C039
+13L0C23C2C32C033
+1LL0C2222222C039
+1LL0C23C2C32C033
+1LL0C2C323C2C093
+1LL0C2222222C033
+1LL0CCCCC3CCC033
+1LL0CCCC33CCC033
+1LL0CCCC3C3CC066
+1LL0CC3CC33CC066
+1LL0CCCCCC3CC036
+1LL0CCCCCCCCC000
+1110000000000000`],
+  [houseBottomRight2, bitmap`
+330CCCCCCCCC0111
+390CCCCCCCCC0LL1
+930C2222222C0LL1
+930C27323C2C0LL1
+330C2372C32C0L93
+930C2229222C0L91
+330C23C2732C0L91
+390C2C32372C0L91
+330C2222222C0LL1
+330CCC3CCCCC0LL1
+330CCC3CCCCC0LL1
+660CC3CCC9CC0LL1
+660CCCCCC93C0LL1
+630CCCCC333C0LL1
+000CCCCCC9990LL1
+0000000000000111`],
   [flower1, bitmap`
 4444444444444444
 441144444444D444
@@ -1051,6 +1129,57 @@ C333333333333330
 077L7L77LLL77770
 077L7L77L7777770
 0000000000000000`],
+  [crackedTiles1, bitmap`
+1111111111111111
+1LLL2LLLLLLLLLL1
+1LL2LLLLLLLLLLL1
+1L2LLLLLLLLLLLL1
+1L2L2LLLLLLLLLL1
+1LL22LLLLLLLLLL1
+1LL2LLLLLLLLLLL1
+122LLLLLLLLLLLL1
+1LLLLLLLLLLLLLL1
+1LLLLLLLLLLLLLL1
+1LLLLLLLLLLLLLL1
+1LLLLLLLLLLLLLL1
+1LLLLLLLLLL0LLL1
+1LLLLLLLLL0L00L1
+1LLLLLLLLLLLLL01
+1111111111111111`],
+  [crackedTiles2, bitmap`
+1111111111111111
+1LLLLLLLLLLL0LL1
+1LLLLLLLLLLL0LL1
+1LLLLLLLLLL0L1L1
+1LLLLLLLLLLLLLL1
+1LLLLLLLLLLLLLL1
+12L22LLLLLLLLLL1
+1L22LLLLLLLLLLL1
+1LL2LLLLLLLLLLL1
+1LLL22LLLLLLLLL1
+1LLL2LLLLLLLLLL1
+1LLL22LLLLLLLLL1
+1LLL2LLLLLL0LLL1
+1LL2LLLLLL0L00L1
+1L2LLLLLLLLLLL01
+1111111111111111`],
+  [crackedTiles3, bitmap`
+1111111111111111
+1LLL2LLLLLL1LLL1
+1LL2LLLLLLLL1LL1
+1L2LLLLLLLLL1LL1
+1L2L2LLLLLLLL1L1
+1LL22LLLLLLLLL21
+1LL2LLLLLLLLLL21
+102LLLLLLLLLLLL1
+1L0LLLLLLLLLLLL1
+1LL0LLLLLLLLLLL1
+1LL1LLLLLLLLLLL1
+1LLLLLLLLLLLLLL1
+1LLLLLLLLLL0LLL1
+1LLLLLLLLL0L00L1
+1LLLLLLLLLLLLL01
+1111111111111111`],
 );
 
 setBackground(grass);
@@ -1299,7 +1428,36 @@ wmggggggw
 wbggggblw
 wwwwwwwww`
   ],
+  [``,
+   ``,
+   map`
+wwwwwwwww
+wgggggggw
+wgggggggw
+wgggggggw
+wggggggg:
+wgggggggw
+wgggggggw
+wgggpgggw
+wwww"wwww`,
+   map`
+wwwwwwwwwww
+wEGFEGFEGFw
+wFPQFEGFEGw
+wERSEGFEGFw
+wFEGFEGFEGw
+wEGFEGFEGFw
+wFEGFEGFEGw
+wEGFEpFEGFw
+wwwwwwwwwww`]
 ];
+
+for(let j = 0; j < levels[4].length; j++) {
+  ghoulImmuneLevels.push([4,j]);
+  sleepyGhoulImmuneLevels.push([4,j]);
+  skeletonImmuneLevels.push([4,j]);
+  babyGhoulImmuneLevels.push([4,j]);
+}
 
 function getMapWidth() {
   return levels[levelI][levelJ].trim().split("\n")[0].length;
@@ -1946,6 +2104,9 @@ afterInput(() => {
 
   if(levelI === inverterEnd[0] && levelJ === inverterEnd[1]){
     inverterGemGotten = true;
+    if(mazeGemGotten) playerHealth = 5;
+    else playerHealth = 3;
+    updateHealthTile();
   }
   
   if(tilesWith(player, backToStartTper).length !== 0) {
@@ -2001,4 +2162,28 @@ afterInput(() => {
 
   di = 0;
   dj = 0;
+
+  let shownWarningText = false;
+  if(levelI === warningRoom[0] && levelJ === warningRoom[1]) {
+    if(!shownWarningText) {
+      console.log("120");
+      let options1 = { y:3, color: color`3` };
+      let options2 = {y:4, color:color`3`};
+      let options3 = {y:5, color:color`3`};
+      let options4 = {y:6, color:color`3`};
+      addText("WARNING!", options1);
+      addText("DEATH LIES AHEAD", options2);
+      addText("ENTER AT", options3);
+      addText("YOUR OWN RISK", options4);
+      texts.push(["WARNING!", options1]);
+      texts.push(["DEATH LIES AHEAD", options2]);
+      texts.push(["ENTER AT", options3]);
+      texts.push(["YOUR OWN RISK", options4]);
+      shownWarningText = true;
+    }
+  } else {
+    //clearText();
+    texts = texts.filter(n => n[0] !== `The Butchery, ${butcheryScore}/${butcheryMax}`);
+    refreshText();
+  }
 });
