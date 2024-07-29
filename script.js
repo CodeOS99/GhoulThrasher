@@ -2183,7 +2183,10 @@ afterInput(() => {
     }
   } else {
     //clearText();
-    texts = texts.filter(n => n[0] !== `The Butchery, ${butcheryScore}/${butcheryMax}`);
+    texts = texts.filter(n => n[0] !== "WARNING!");
+    texts = texts.filter(n => n[0] !== "DEATH LIES AHEAD");
+    texts = texts.filter(n => n[0] !== "ENTER AT");
+    texts = texts.filter(n => n[0] !== "YOUR OWN RISK");
     refreshText();
   }
 });
