@@ -78,14 +78,21 @@ const bulletVels = {
   "B": [1, 0],
   "A": [1, 0],
   "C": [0, -1],
-  "D": [0, 1]
+  "D": [0, 1],
 };
+
+const nuclearSplashVels = {
+  "I": [0, -1],
+  "J": [0, 1],
+  "K": [-1, 0],
+  "L": [1, 0]
+}
 
 const enemies = [
   ghoulLeft, ghoulRight,
   babyGhoulLeft, babyGhoulRight,
   sleepyGhoul,
-  skeletonLeft, skeletonRight, skeletonArrow
+  skeletonLeft, skeletonRight, skeletonArrow,
 ];
 
 const butcheryMax = 10;
@@ -245,6 +252,9 @@ let buttonCoords = {
     [9, 1]
   ]
 }
+
+let nuclearBarrelCurrent = 0;
+let nuclearBarrelMax = 50;
 
 setLegend(
   [nuclearBarrel, bitmap`
@@ -1575,7 +1585,7 @@ wwwwwwwwwww`,
 wwwwwwwwwww
 wEGFEGFEGFw
 wFPQFEGFEGw
-wERSEGNEGFw
+wERSNGNEGFw
 wFEGFEGFEGw
 wEGFEGFEGFw
 wFEGFEGFEGw
@@ -1798,28 +1808,26 @@ function initAll() {
   inverted = false;
 }
 
+function updateProgressFinalBossText() {
+  texts = texts.filter(n => {
+    n[0].includes("Progress")
+  });
+  addText(`Progress:${Math.floor(((maxHouseHealth-houseHealth)/maxHouseHealth)*100)}`, { y: getMapHeight() - 1, color: color`C` });
+  texts.push([`Progress:${Math.floor(((maxHouseHealth-houseHealth)/maxHouseHealth)*100)}`, { y: getMapHeight() - 1, color: color`C` }]);
+}
+
 function checkBulletEnemyKillAll(bulletType) {
   enemies.forEach(enemy => bulletEnemyKill(bulletType, enemy));
   nuclearExplosionCheck(bulletType);
 }
 
-function nuclearExplosionCheck(bulletType) {
-  tilesWith(bulletType, nuclearBarrel).forEach(bulletBarrel => {
-    bulletBarrel.forEach(sprite => {
-      if (sprite._type === nuclearBarrel) { // only spawn splashes now
-        addSprite(sprite.x + 1, sprite.y, nuclearSplashRight);
-        addSprite(sprite.x - 1, sprite.y, nuclearSplashLeft);
-        addSprite(sprite.x, sprite.y + 1, nuclearSplashDown);
-        addSprite(sprite.x, sprite.y - 1, nuclearSplashUp);
-        let x = sprite.x;
-        let y = sprite.y;
-        addSprite(x, y, crackedTiles1);
-        sprite.remove();
-        return;
-      }
-      sprite.remove();
-    });
-  });
+function checkAllBulletKillAllEnemy() {
+  for (let bulletType in bulletVels) {
+    checkBulletEnemyKillAll(bulletType);
+  }
+  for (let splashType in nuclearSplashVels) {
+    nuclearSplashCheck(splashType);
+  }
 }
 
 function bulletEnemyKill(bulletType, enemyType) {
@@ -1852,42 +1860,75 @@ function bulletEnemyKill(bulletType, enemyType) {
             updateHealthTile();
           }
         }
-
-        if (sprite === houseTopLeft2 || sprite === houseTopRight2 || sprite === houseBottomLeft2 || sprite === houseBottomRight2) {
-          houseHealth--;
-          texts = texts.filter(n => {
-            console.log(n);
-            n[0].includes("Progress")
-          });
-          addText(`Progress:${((maxHouseHealth-houseHealth)/maxHouseHealth)*100}`, { y: getMapHeight() - 1, color: color`C` });
-          texts.push([`Progress:${((maxHouseHealth-houseHealth)/maxHouseHealth)*100}`, { y: getMapHeight() - 1, color: color`C` }]);
-          return;
-        }
         sprite.remove();
       }
     });
   });
 }
 
-function checkAllBulletKillAllEnemy() {
-  for (let bulletType in bulletVels) {
-    checkBulletEnemyKillAll(bulletType);
-  }
+function nuclearSplashCheck(splashType) {
+  nuclearHousePartCheck(splashType, houseTopLeft2);
+  nuclearHousePartCheck(splashType, houseTopRight2);
+  nuclearHousePartCheck(splashType, houseBottomLeft2);
+  nuclearHousePartCheck(splashType, houseBottomRight2);
+}
+
+function nuclearHousePartCheck(splashType, houseType) {
+  tilesWith(splashType, houseType).forEach(pair => {
+    console.log(splashType);
+    if(pair[0]._type === splashType) {
+      pair[0].remove();
+    } else if(pair[1]._type === splashType){
+      pair[1].remove();
+    }
+    houseHealth--;
+    updateProgressFinalBossText();
+    return;
+  });
 }
 
 // Function to handle bullet movement
 function moveBullets(bulletType) {
   getAll(bulletType).forEach((bullet) => {
-    bullet.x += bulletVels[bulletType][0];
-    bullet.y += bulletVels[bulletType][1];
+    if (bulletType === nuclearSplashUp || bulletType === nuclearSplashDown || bulletType === nuclearSplashRight || bulletType === nuclearSplashLeft) {
+      bullet.x += nuclearSplashVels[bulletType][0];
+      bullet.y += nuclearSplashVels[bulletType][1];
 
-    if (bullet.y <= 0) bullet.remove();
-    if (bullet.y >= getMapHeight() - 2) bullet.remove();
-    if (bullet.x <= 0) bullet.remove();
-    if (bullet.x >= getMapWidth() - 1) bullet.remove();
+      if (bullet.y <= 0) bullet.remove();
+      if (bullet.y >= getMapHeight() - 2) bullet.remove();
+      if (bullet.x <= 0) bullet.remove();
+      if (bullet.x >= getMapWidth() - 1) bullet.remove();
+    } else {
+      bullet.x += bulletVels[bulletType][0];
+      bullet.y += bulletVels[bulletType][1];
+
+      if (bullet.y <= 0) bullet.remove();
+      if (bullet.y >= getMapHeight() - 2) bullet.remove();
+      if (bullet.x <= 0) bullet.remove();
+      if (bullet.x >= getMapWidth() - 1) bullet.remove();
+    }
   });
 
   checkAllBulletKillAllEnemy();
+}
+
+function nuclearExplosionCheck(bulletType) {
+  tilesWith(bulletType, nuclearBarrel).forEach(bulletBarrel => {
+    bulletBarrel.forEach(sprite => {
+      if (sprite._type === nuclearBarrel) { // only spawn splashes now
+        addSprite(sprite.x + 1, sprite.y, nuclearSplashRight);
+        addSprite(sprite.x - 1, sprite.y, nuclearSplashLeft);
+        addSprite(sprite.x, sprite.y + 1, nuclearSplashDown);
+        addSprite(sprite.x, sprite.y - 1, nuclearSplashUp);
+        let x = sprite.x;
+        let y = sprite.y;
+        addSprite(x, y, crackedTiles1);
+        sprite.remove();
+        return;
+      }
+      sprite.remove();
+    });
+  });
 }
 
 // Bullet logic
@@ -1901,6 +1942,21 @@ setInterval(() => {
   moveBullets(bootlegBulletRight);
   moveBullets(bootlegBulletUp);
   moveBullets(bootlegBulletDown);
+
+  moveBullets(nuclearSplashUp);
+  moveBullets(nuclearSplashDown);
+  moveBullets(nuclearSplashLeft);
+  moveBullets(nuclearSplashRight);
+}, 100);
+
+// Nuclear Barrel Spawning Logic
+setInterval(() => {
+  nuclearBarrelCurrent ++;
+  if(levelI === bossRoom[0] && levelJ === bossRoom[1] && nuclearBarrelCurrent === nuclearBarrelMax) {
+    nuclearBarrelCurrent = 0;
+    coords = getValidRandomCoords();
+    addSprite(coords[0], coords[1], nuclearBarrel);
+  }
 }, 100);
 
 let count = 0;
@@ -2219,23 +2275,10 @@ setInterval(() => {
   });
 }, 1500);
 
-// Bullet interval
+// Skeleton Bullet interval
 setInterval(() => {
   xAndYCoordMotionEnemy(skeletonArrow);
 }, 300);
-
-// just in case
-setInterval(() => {
-  checkBulletEnemyKillAll(bulletLeft);
-  checkBulletEnemyKillAll(bulletRight);
-  checkBulletEnemyKillAll(bulletUp);
-  checkBulletEnemyKillAll(bulletDown);
-
-  checkBulletEnemyKillAll(bootlegBulletLeft);
-  checkBulletEnemyKillAll(bootlegBulletRight);
-  checkBulletEnemyKillAll(bootlegBulletUp);
-  checkBulletEnemyKillAll(bootlegBulletDown);
-}, 100);
 
 let di = 0;
 let dj = 0;
@@ -2388,8 +2431,6 @@ afterInput(() => {
     refreshText();
   }
   if (levelI === bossRoom[0] && levelJ === bossRoom[1]) {
-    addText(`Progress:${((maxHouseHealth-houseHealth)/maxHouseHealth)*100}`, { y: getMapHeight() - 1, color: color`C` });
-    texts.push([`Progress:${((maxHouseHealth-houseHealth)/maxHouseHealth)*100}`, { y: getMapHeight() - 1, color: color`C` }]);
-    console.log('ts');
+    updateProgressFinalBossText();
   }
 });
