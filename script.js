@@ -69,6 +69,7 @@ const nuclearSplashLeft = "I";
 const nuclearSplashRight = "J";
 const nuclearSplashUp = "K";
 const nuclearSplashDown = "L";
+const houseLaser = "T";
 
 const bulletVels = {
   ">": [1, 0],
@@ -93,6 +94,7 @@ const enemies = [
   babyGhoulLeft, babyGhoulRight,
   sleepyGhoul,
   skeletonLeft, skeletonRight, skeletonArrow,
+  houseLaser,
 ];
 
 const butcheryMax = 10;
@@ -135,9 +137,10 @@ const tutorialFinalBossRoom = [4, 3];
 const bossRoom = [4, 4];
 
 // Gems declaration
-let mazeGemGotten = false;
-let butcheryGemGotten = false;
-let inverterGemGotten = false;
+//TODO CHANGE GEMS STATE ON RELEASE
+let mazeGemGotten = true;
+let butcheryGemGotten = true;
+let inverterGemGotten = true;
 
 const PLAYER_WALK_SPEED = 1;
 
@@ -163,8 +166,12 @@ let texts = [];
 
 let playerHealth = 3;
 
-const maxHouseHealth = 10;
+const maxHouseHealth = 15;
 let houseHealth = maxHouseHealth;
+
+const phaseTwoChange = 12;
+const phaseThreeChange = 8;
+const phaseFourChange = 4;
 
 const ghoulImmuneLevels = [
   [0, 3],
@@ -254,7 +261,7 @@ let buttonCoords = {
 }
 
 let nuclearBarrelCurrent = 0;
-let nuclearBarrelMax = 50;
+let nuclearBarrelMax = 25;
 
 setLegend(
   [nuclearBarrel, bitmap`
@@ -339,6 +346,23 @@ setLegend(
 ...D44444444D...
 ...D44444444D...
 ...DDDDDDDDDD...
+................
+................
+................`],
+  [houseLaser, bitmap`
+................
+................
+................
+................
+................
+................
+.33333333333333.
+.39999999999993.
+.39222222222293.
+.39999999999993.
+.33333333333333.
+................
+................
 ................
 ................
 ................`],
@@ -1590,7 +1614,11 @@ wFEGFEGFEGw
 wEGFEGFEGFw
 wFEGFEGFEGw
 wEGFEpFEGFw
-wwwwwwwwwww`
+wwwwwwwwwww`,
+    map`
+www
+wpw
+www`
   ]
 ];
 
@@ -1812,8 +1840,8 @@ function updateProgressFinalBossText() {
   texts = texts.filter(n => {
     n[0].includes("Progress")
   });
-  addText(`Progress:${Math.floor(((maxHouseHealth-houseHealth)/maxHouseHealth)*100)}`, { y: getMapHeight() - 1, color: color`C` });
-  texts.push([`Progress:${Math.floor(((maxHouseHealth-houseHealth)/maxHouseHealth)*100)}`, { y: getMapHeight() - 1, color: color`C` }]);
+  addText(`Progress:${Math.floor(((maxHouseHealth-houseHealth)/maxHouseHealth)*100)}%`, { y: 15, color: color`2` });
+  texts.push([`Progress:${Math.floor(((maxHouseHealth-houseHealth)/maxHouseHealth)*100)}%`, { y: 15, color: color`2` }]);
 }
 
 function checkBulletEnemyKillAll(bulletType) {
@@ -1951,13 +1979,15 @@ setInterval(() => {
 
 // Nuclear Barrel Spawning Logic
 setInterval(() => {
-  nuclearBarrelCurrent ++;
-  if(levelI === bossRoom[0] && levelJ === bossRoom[1] && nuclearBarrelCurrent === nuclearBarrelMax) {
-    nuclearBarrelCurrent = 0;
-    coords = getValidRandomCoords();
-    addSprite(coords[0], coords[1], nuclearBarrel);
+  if(levelI === bossRoom[0] && levelJ === bossRoom[1]) {
+    nuclearBarrelCurrent ++;
+    if(nuclearBarrelCurrent >= nuclearBarrelMax) {
+      nuclearBarrelCurrent = 0;
+      coords = getValidRandomCoords();
+      addSprite(coords[0], coords[1], nuclearBarrel);
+    }
   }
-}, 100);
+}, 50);
 
 let count = 0;
 // shoot interval
@@ -1982,6 +2012,11 @@ function getValidRandomCoords() {
   let randomY = getRandomInt(1, getMapHeight() - 3);
   while (randomY === getFirst(player).y) {
     randomY = getRandomInt(1, getMapHeight() - 3);
+  }
+
+  // Check to make sure nothing spawns at the houses in the final boss room
+  if(levelI === bossRoom[0] && levelJ === bossRoom[1] && ((randomX === 2 && randomY === 2) || (randomX === 2 && randomY === 3) || (randomX === 3 && randomY === 2) || (randomX === 3 && randomY === 3))) {
+    return getValidRandomCoords();
   }
 
   if (getFirst(player).x - randomX > 0) {
@@ -2279,6 +2314,61 @@ setInterval(() => {
 setInterval(() => {
   xAndYCoordMotionEnemy(skeletonArrow);
 }, 300);
+
+let attackCounter = 0;
+let attackCounterMax = 12;
+let bossPhase = 1;
+// Final boss attack mechanism
+setInterval(() => {
+  if(levelI === bossRoom[0] && levelJ === bossRoom[1]) {
+    attackCounter++;
+    if(houseHealth === phaseTwoChange) {
+      bossPhase = 2;
+      nuclearBarrelMax = 35
+    }
+    if(houseHealth === phaseThreeChange) {
+      bossPhase = 3;
+      nuclearBarrelMax = 45
+    }
+    if(houseHealth === phaseFourChange) {
+      nuclearBarrelMax = 55
+    }
+    if(attackCounter >= attackCounterMax/bossPhase) {
+      attackCounter = 0;
+      let attack = getRandomInt(0, 1);
+      if(attack === 0) {
+        spawnLaser();
+      } else if(attack === 1) {
+        // TODO add sound to that the player knows what happened
+        spawnRandomEnemies();
+      }
+    }
+    xAndYCoordMotionEnemy(houseLaser);
+  }
+}, 400);
+
+// boss phase 3+ doesnt affect this
+function spawnLaser() {
+  addSprite(getFirst(houseTopLeft2).x-1, getFirst(houseTopLeft2).y, houseLaser);
+
+  if(bossPhase === 2) {
+    addSprite(getFirst(houseTopRight2).x+1, getFirst(houseTopRight2).y, houseLaser);
+  }
+
+  if(bossPhase === 3) {
+    addSprite(getFirst(houseBottomLeft2).x+1, getFirst(houseBottomLeft2).y, houseLaser);
+  }
+}
+
+// boss phase 2+ doesnt affect this
+function spawnRandomEnemies() {
+  let possibleEnemies = [ghoulLeft, ghoulRight, babyGhoulLeft, babyGhoulRight, skeletonLeft, skeletonRight]; // No sleeping ghosts because those things are harder than the actual boss 
+  for(let i = 0; i < Math.min(bossPhase, 2); i++) {
+    let randCoords = getValidRandomCoords();
+    let randEnemy = possibleEnemies[getRandomInt(0, possibleEnemies.length-1)];
+    addSprite(randCoords[0], randCoords[1], randEnemy);
+  }
+}
 
 let di = 0;
 let dj = 0;
