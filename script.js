@@ -2,6 +2,7 @@
 
 */
 
+// TODO
 // helpers
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -70,6 +71,13 @@ const nuclearSplashRight = "J";
 const nuclearSplashUp = "K";
 const nuclearSplashDown = "L";
 const houseLaser = "T";
+const savedPumpkin = "X";
+const savedApple = "Y";
+const savedEggplant = "Z";
+const unhauntedHouseTopLeft = "M";
+const unhauntedHouseTopRight = "U";
+const unhauntedHouseBottomLeft = "V";
+const unhauntedHouseBottomRight = "W";
 
 const bulletVels = {
   ">": [1, 0],
@@ -166,7 +174,7 @@ let texts = [];
 
 let playerHealth = 3;
 
-const maxHouseHealth = 15;
+const maxHouseHealth = 1;
 let houseHealth = maxHouseHealth;
 
 const phaseTwoChange = 12;
@@ -264,6 +272,125 @@ let nuclearBarrelCurrent = 0;
 let nuclearBarrelMax = 25;
 
 setLegend(
+  [unhauntedHouseTopLeft, bitmap`
+4444444444444440
+444444444444440C
+44444444444440CC
+444LLLLLLLLLLLCC
+4444LLLLLLLLLCCC
+44444LLLLLLLCCCC
+444444LLLLLCCCCC
+444444LLLLLCCCCC
+444444LLLLLCCCCC
+444444LLLLLCCCCC
+444440LLLLLCCCCC
+44440CLLLLLCCCCC
+4440CCCCCCCCCCCC
+440CCCCCCCCCCCCC
+40CCCCCCCCCCCCCC
+0000000000000000`],
+  [unhauntedHouseTopRight, bitmap`
+0444444444444444
+C044444444444444
+CC04444444444444
+CCC0444444444444
+CCCC044444444444
+CCCCC04444444444
+CCCCCC0444444444
+CCCCCCC044444444
+CCCCCCCC04444444
+CCCCCCCCC0444444
+CCCCCCCCCC044444
+CCCCCCCCCCC04444
+CCCCCCCCCCCC0444
+CCCCCCCCCCCCC044
+CCCCCCCCCCCCCC04
+0000000000000000`],
+  [unhauntedHouseBottomLeft, bitmap`
+4D40CCCCCCCCC011
+DDD0CCCCCCCCC011
+DDD0C2222222C011
+DDD0C2772772C011
+DDD0C2772772C011
+DDD0C2222222C011
+DDD0C2772772C061
+DDD0C2772772C011
+DDD0C2222222C011
+DDD0CCCCCCCCC011
+DDD0CCCCCCCCC011
+DDD0CCCCCCCCC0L1
+DDD0CCCCCCCCC01L
+DDD0CCCCCCCCC011
+4D40CCCCCCCCC000
+4440000000000000`],
+  [unhauntedHouseBottomRight, bitmap`
+110CCCCCCCCC04D4
+110CCCCCCCCC0DDD
+110C2222222C0DDD
+110C2772772C0DDD
+110C2772772C0DDD
+110C2222222C0DDD
+160C2772772C0DDD
+110C2772772C0DDD
+110C2222222C0DDD
+110CCCCCCCCC0DDD
+110CCCCCCCCC0DDD
+1L0CCCCCCCCC0DDD
+L10CCCCCCCCC0DDD
+110CCCCCCCCC0DDD
+000CCCCCCCCC04D4
+0000000000000444`],
+  [savedPumpkin, bitmap`
+....0000........
+..0044440.......
+.0DD404440......
+..000444440.....
+..00099999000...
+..09999999990...
+.0999909099990..
+0C9C99090999C90.
+0C9999999999990.
+0C9990990999990.
+0C99990099C9990.
+0CC999999999990.
+0CCC999999999C0.
+0CCCCC99999C990.
+.0C00C00090090..
+..0..00.00..0...`],
+  [savedApple, bitmap`
+........0.......
+.......0C0......
+.....000C00000..
+..0000D4C033330.
+.033333DC3322330
+0C33303333322230
+0C33033333332230
+0C33030333033330
+0C33330333033330
+0C33330333033330
+0C33303333333330
+0CC3330033333330
+0CC3333333333330
+0CCCCC0003333330
+.0CC000..003300.
+..00.......00...`],
+  [savedEggplant, bitmap`
+..........0000..
+.....00000D440..
+....0H8888DD0...
+...0H8888280....
+..0H80808880....
+..0H8080880.....
+..0H808080......
+..0H888880......
+..0H888880......
+..00H08080......
+...0H808880.....
+...00H888880....
+....0HH888880...
+....00HH888880..
+.....00HH88880..
+......0000000...`],
   [nuclearBarrel, bitmap`
 1110000000000111
 1L0DDDDDDDDDD0L1
@@ -1616,9 +1743,15 @@ wFEGFEGFEGw
 wEGFEpFEGFw
 wwwwwwwwwww`,
     map`
-www
-wpw
-www`
+wwwwwwwww
+wpgggXZgw
+wgggggggw
+wgYgggggw
+wggggggZw
+wZggMUgXw
+wYggVWgYw
+wggYXgggw
+wwwwwwwww`
   ]
 ];
 
@@ -2320,7 +2453,7 @@ let attackCounterMax = 12;
 let bossPhase = 1;
 // Final boss attack mechanism
 setInterval(() => {
-  if(levelI === bossRoom[0] && levelJ === bossRoom[1]) {
+  if(levelI === bossRoom[0] && levelJ === bossRoom[1] && houseHealth > 0) {
     attackCounter++;
     if(houseHealth === phaseTwoChange) {
       bossPhase = 2;
@@ -2373,6 +2506,7 @@ function spawnRandomEnemies() {
 let di = 0;
 let dj = 0;
 let shownText = false;
+  let gameWon = false;
 afterInput(() => {
   // pushable button connection
   if (buttonCoords[`${levelI},${levelJ}`] !== undefined) {
@@ -2394,7 +2528,8 @@ afterInput(() => {
     if (buttonFlagWhole) {
       dj += 2;
     }
-  }
+  }  
+
   // Player collisions
   if (tilesWith(player, doorLeft).length !== 0 || tilesWith(invertedPlayer, doorLeft).length !== 0) {
     dj--;
@@ -2469,6 +2604,7 @@ afterInput(() => {
   di = 0;
   dj = 0;
 
+
   let shownWarningText = false;
   if (levelI === warningRoom[0] && levelJ === warningRoom[1]) {
     if (!shownWarningText) {
@@ -2522,5 +2658,31 @@ afterInput(() => {
   }
   if (levelI === bossRoom[0] && levelJ === bossRoom[1]) {
     updateProgressFinalBossText();
+  }
+  if(houseHealth <= 0 && gameWon === false) { // only possible in the boss room so no other checks
+    clearTile(10, 4);
+    addSprite(10, 4, doorRight);
+    if(mazeGemGotten) playerHealth=5;
+    else playerHealth=3;
+    updateHealthTile();
+        gameWon = true;
+  }
+      console.log("game was", gameWon);
+
+  if(levelI === bossRoom[0] && levelJ === bossRoom[1]+1) {
+      texts = texts.filter(n => {
+    n[0].includes("Progress")
+  });
+    addText("... and thus", {y:5, color:color`6`});
+    texts.push(["... and thus", {y:5, color:color`6`}]);
+    
+    addText("peace is restored", {y:6, color:color`6`});
+    texts.push(["peace is restored", {y:6, color:color`6`}]);
+
+    addText("all thanks to...", {y:7, color:color`6`});
+    texts.push(["all thanks to...", {y:7, color:color`6`}]);
+
+    addText("one brave banana.", {y:8, color:color`6`});
+    texts.push(["one brave banana.", {y:8, color:color`6`}]);
   }
 });
