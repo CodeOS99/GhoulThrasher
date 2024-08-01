@@ -1,8 +1,6 @@
 /*
 
 */
-
-// TODO
 // helpers
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -78,6 +76,13 @@ const unhauntedHouseTopLeft = "M";
 const unhauntedHouseTopRight = "U";
 const unhauntedHouseBottomLeft = "V";
 const unhauntedHouseBottomRight = "W";
+const butcheryGemFrameEmpty = "-";
+const butcheryGemFrameGotten = "~";
+const mazeGemFrameEmpty = "/";
+const mazeGemFrameGotten = "\\";
+const inverterGemFrameEmpty = ")";
+const inverterGemFrameGotten = "(";
+const skull = "_";
 
 const bulletVels = {
   ">": [1, 0],
@@ -118,8 +123,8 @@ const enemyScoreMap = {
   "#": 1,
 };
 
-const initI = 3;
-const initJ = 2;
+const initI = 0;
+const initJ = 3;
 const butcheryCoords = [3, 3];
 const mazeEndCoords = [1, 0];
 const inverterStart = [2, 2];
@@ -143,12 +148,14 @@ const inverterEnd = [2, 16];
 const warningRoom = [4, 2];
 const tutorialFinalBossRoom = [4, 3];
 const bossRoom = [4, 4];
+const gameStart = [3, 2];
+const deathEnd = [1, 3];
 
 // Gems declaration
 //TODO CHANGE GEMS STATE ON RELEASE
-let mazeGemGotten = true;
-let butcheryGemGotten = true;
-let inverterGemGotten = true;
+let mazeGemGotten = false;
+let butcheryGemGotten = false;
+let inverterGemGotten = false;
 
 const PLAYER_WALK_SPEED = 1;
 
@@ -181,64 +188,21 @@ const phaseTwoChange = 12;
 const phaseThreeChange = 8;
 const phaseFourChange = 4;
 
-const ghoulImmuneLevels = [
-  [0, 3],
-  [1, 0],
-  [1, 1],
-  [1, 2],
-  [2, 0],
-  [2, 1],
-  [3, 0],
-  [3, 1],
-  [2, 2],
-  [2, 3],
-  [2, 16]
+let ghoulLevels = [ // not const!
+  butcheryCoords,
+  gameStart
 ]
-const sleepyGhoulImmuneLevels = [
-  [0, 3],
-  [1, 0],
-  [1, 1],
-  [1, 2],
-  [2, 0],
-  [2, 1],
-  [3, 0],
-  [3, 1],
-  [initI, initJ],
-  [2, 16]
+let sleepyGhoulLevels = [ // not const!
+  butcheryCoords
 ];
-const skeletonImmuneLevels = [
-  [0, 2],
-  [1, 0],
-  [1, 1],
-  [1, 2],
-  [2, 0],
-  [2, 1],
-  [3, 0],
-  [3, 1],
-  [initI, initJ],
-  [2, 16]
+let skeletonLevels = [ // not const!
+  butcheryCoords
 ];
 
-const babyGhoulImmuneLevels = [
-  [0, 3],
-  [1, 0],
-  [1, 1],
-  [1, 2],
-  [2, 0],
-  [2, 1],
-  [3, 0],
-  [3, 1],
-  [2, 2],
-  [2, 3],
-  [2, 16]
+let babyGhoulLevels = [ // not const!
+  butcheryCoords,
+  gameStart
 ]
-
-for (let level of inverters) {
-  ghoulImmuneLevels.push(level);
-  sleepyGhoulImmuneLevels.push(level);
-  skeletonImmuneLevels.push(level);
-  babyGhoulImmuneLevels.push(level);
-}
 
 let butcheryScore = 0;
 
@@ -272,6 +236,127 @@ let nuclearBarrelCurrent = 0;
 let nuclearBarrelMax = 25;
 
 setLegend(
+  [skull, bitmap`
+CCCC00000000CCCC
+CCC0222222220CCC
+CC022222222220CC
+C02200022000220C
+C02200322300220C
+C02222222222220C
+C02222222222220C
+C02222222222220C
+CC000222222000CC
+CCCCC022220CCCCC
+CCCCC020020CCCCC
+CCCCC000000CCCCC
+CCCCCCCCCCCCCCCC
+CCCCC000000CCCCC
+CCCCC022220CCCCC
+CCCCC000000CCCCC`],
+  
+  [butcheryGemFrameEmpty, bitmap`
+3399999999999933
+3399999999999933
+99CCCCCCCCCCCC99
+99CCCCCCCCCCCC99
+99CCCCCCCCCCCC99
+99CCCCCCCCCCCC99
+99CCCCCCCCCCCC99
+99CCCCCCCCCCCC99
+99CCCCCCCCCCCC99
+99CCCCCCCCCCCC99
+99CCCCCCCCCCCC99
+99CCCCCCCCCCCC99
+99CCCCCCCCCCCC99
+99CCCCCCCCCCCC99
+3399999999999933
+3399999999999933`],
+  [butcheryGemFrameGotten, bitmap`
+3399999999999933
+3399999999999933
+99CCCCCCCCCCCC99
+99CCCCCCCCCCCC99
+99CCCCCCCCCCCC99
+99C6666666666C99
+99CCCCCC6666CC99
+99CCCCCC666CCC99
+99CCCCCCCCCCCC99
+99CC3CCCCC3CCC99
+99C333CCC333CC99
+99C333CCC333CC99
+9933333C33333C99
+99C333CCC333CC99
+3399999999999933
+3399999999999933`],
+  [mazeGemFrameEmpty, bitmap`
+LL111111111111LL
+LL111111111111LL
+11LLLLLLLLLLLL11
+11LLLLLLLLLLLL11
+11LLLLLLLLLLLL11
+11LLLLLLLLLLLL11
+11LLLLLLLLLLLL11
+11LLLLLLLLLLLL11
+11LLLLLLLLLLLL11
+11LLLLLLLLLLLL11
+11LLLLLLLLLLLL11
+11LLLLLLLLLLLL11
+11LLLLLLLLLLLL11
+11LLLLLLLLLLLL11
+LL111111111111LL
+LL111111111111LL`],
+  [mazeGemFrameGotten, bitmap`
+LL111111111111LL
+LL111111111111LL
+11LLLLLLLLLLLL11
+11L66666666L6L11
+11L6LLLLL6LL6L11
+11L6L6LLLLLL6L11
+11L6L6666L6L6L11
+11L6LLLL6LL66L11
+11L6LL666L6L6L11
+11L6L66LLL6L6L11
+11L6LL6L66LL6L11
+11L6LL6LLLLL6L11
+11L6666L66666L11
+11LLLLLLLLLLLL11
+LL111111111111LL
+LL111111111111LL`],
+  [inverterGemFrameEmpty, bitmap`
+5577777777777755
+5577777777777755
+77DDDDDDDDDDDD77
+77DDDDDDDDDDDD77
+77DDDDDDDDDDDD77
+77DDDDDDDDDDDD77
+77DDDDDDDDDDDD77
+77DDDDDDDDDDDD77
+77DDDDDDDDDDDD77
+77DDDDDDDDDDDD77
+77DDDDDDDDDDDD77
+77DDDDDDDDDDDD77
+77DDDDDDDDDDDD77
+77DDDDDDDDDDDD77
+5577777777777755
+5577777777777755`],
+  [inverterGemFrameGotten, bitmap`
+HH888888888888HH
+HH888888888888HH
+8822222222222288
+8822222222222288
+8822222222222288
+8822242222422288
+8822242222422288
+8822222222222288
+8822222222222288
+8822422222242288
+8822244444422288
+8822222222222288
+8822222222222288
+8822222222222288
+HH888888888888HH
+HH888888888888HH`],
+
   [unhauntedHouseTopLeft, bitmap`
 4444444444444440
 444444444444440C
@@ -1466,7 +1551,7 @@ C333333333333330
 
 setBackground(grass);
 
-setSolids([player, wall, invertedPlayer, pushable, health55, health54, health53, health52, health51, health50, health30, health31, health32, health33]);
+setSolids([player, wall, invertedPlayer, pushable, health55, health54, health53, health52, health51, health50, health30, health31, health32, health33, butcheryGemFrameEmpty, butcheryGemFrameGotten, mazeGemFrameEmpty, mazeGemFrameGotten, inverterGemFrameEmpty, inverterGemFrameGotten]);
 
 let levelI = initI;
 let levelJ = initJ;
@@ -1475,11 +1560,19 @@ const levels = [
   ['',
     '',
     map`
-w'www
-wp[]w
-wl{}w
-wmffw
-wwwww`
+w-/='ww
+wttp[]w
+wttl{}w
+wttmffw
+wwwwwww`, // maze
+   map`
+wwwwwww
+wgggggw
++gpgggw
+wgggggw
+wgggggw
+wgggggw
+wwwwwww`, // init
   ], // maze
   [map`
 wwwwwwww'w
@@ -1516,7 +1609,15 @@ wwwggggwgw
 wgwggggwgw
 wgwgwwwwgw
 wggggggggw
-www"wwwwww`,
+www"wwwwww`, // maze
+   map`
+wwwwwww
+w_____w
++_____w
+w_____w
+wtttttw
+wttpttw
+wwwwwww`, // death
   ],
   [map`
 wwwwwwwwww
@@ -1667,7 +1768,7 @@ w&&&&&&&w
 +p&&&&&ew
 w&&&&&&&w
 w&&&&&&&w
-wwwwwwwww`
+wwwwwwwww` // inverter End
   ],
   [map`
 wwwwwwwwww
@@ -1694,7 +1795,7 @@ wgwwwwwwgw
 wggggggggw
 wwww""wwww`, // maze
     map`
-9www'wwww
+9/-)'wwww
 wl[]gtgmw
 wg{}ggtgw
 ;gffpmgg:
@@ -1708,7 +1809,7 @@ wggmggggw
 ;pggbgggw
 wmggggggw
 wbggggblw
-wwwwwwwww`
+wwwwwwwww` // Butchery
   ],
   [``,
     ``,
@@ -1721,7 +1822,7 @@ wggggggg:
 wgggggggw
 wgggggggw
 wgggpgggw
-wwww"wwww`,
+wwww"wwww`, // warning
     map`
 wwwwwwwwwww
 wgggggggggw
@@ -1731,7 +1832,7 @@ wgggggggggw
 wgggggggggw
 wgggggggggw
 wgggggggggw
-wwwwwwwwwww`,
+wwwwwwwwwww`, // tutorial
     map`
 wwwwwwwwwww
 wEGFEGFEGFw
@@ -1741,7 +1842,7 @@ wFEGFEGFEGw
 wEGFEGFEGFw
 wFEGFEGFEGw
 wEGFEpFEGFw
-wwwwwwwwwww`,
+wwwwwwwwwww`, // main boss
     map`
 wwwwwwwww
 wpgggXZgw
@@ -1751,16 +1852,9 @@ wggggggZw
 wZggMUgXw
 wYggVWgYw
 wggYXgggw
-wwwwwwwww`
+wwwwwwwww` // end!
   ]
 ];
-
-for (let j = 0; j < levels[4].length; j++) {
-  ghoulImmuneLevels.push([4, j]);
-  sleepyGhoulImmuneLevels.push([4, j]);
-  skeletonImmuneLevels.push([4, j]);
-  babyGhoulImmuneLevels.push([4, j]);
-}
 
 function getMapWidth() {
   return levels[levelI][levelJ].trim().split("\n")[0].length;
@@ -1771,6 +1865,16 @@ function getMapHeight() {
 }
 
 setMap(levels[levelI][levelJ]);
+
+addText("Welcome to", {y:7, color:color`6`});
+addText("Ghoul Thrasher!", {y:8, color:color`6`});
+addText("To embark,", {y:9, color:color`6`});
+addText("Go through the TP", {y:10, color:color`6`});
+
+texts.push(["Welcome to", {y:7, color:color`6`}]);
+texts.push(["Ghoul Thrasher!", {y:8, color:color`6`}]);
+texts.push(["To embark,", {y:9, color:color`6`}]);
+texts.push(["Go through the TP", {y:10, color:color`6`}]);
 
 setPushables({
   [player]: [pushable]
@@ -1866,7 +1970,7 @@ onInput("l", () => {
     }
   } else {
     setMap(levels[levelI][levelJ]);
-    updateHealthTile();
+    updateInfoTiles();
   }
 });
 
@@ -1909,7 +2013,8 @@ function shootBootlegBullet(dx, dy) { // dx and dy so we can avoid them
   }
 }
 
-function updateHealthTile() {
+function updateInfoTiles() {
+  // Health tile logic
   if (!mazeGemGotten) { // 3 health
     console.log(getMapWidth() - 1);
     clearTile(0, 0);
@@ -1917,6 +2022,29 @@ function updateHealthTile() {
   } else { // 5 health
     clearTile(0, 0);
     addSprite(0, 0, `${playerHealth}`);
+  }
+
+  clearTile(1, 0);
+  clearTile(2, 0);
+  clearTile(3, 0);
+  
+  // Gem display logic
+  if(mazeGemGotten) {
+    addSprite(1, 0, mazeGemFrameGotten);
+  } else {
+    addSprite(1, 0, mazeGemFrameEmpty);    
+  }
+  
+  if(butcheryGemGotten) {
+    addSprite(2, 0, butcheryGemFrameGotten);
+  } else {
+    addSprite(2, 0, butcheryGemFrameEmpty);    
+  }
+  
+  if(inverterGemGotten) {
+    addSprite(3, 0, inverterGemFrameGotten);
+  } else {
+    addSprite(3, 0, inverterGemFrameEmpty);    
   }
 }
 
@@ -1928,7 +2056,7 @@ function invert() {
     inverted = false;
     levelJ--;
     setMap(levels[levelI][levelJ]);
-    updateHealthTile();
+    updateInfoTiles();
     getFirst(player).remove();
     addSprite(nowX, nowY, player);
 
@@ -1948,7 +2076,7 @@ function invert() {
       console.log(pushableList);
     }
     setMap(levels[levelI][levelJ]);
-    updateHealthTile();
+    updateInfoTiles();
     getFirst(invertedPlayer).remove();
     addSprite(nowX, nowY, invertedPlayer);
   }
@@ -2008,17 +2136,18 @@ function bulletEnemyKill(bulletType, enemyType) {
           if (butcheryScore === butcheryMax && !butcheryGemGotten) {
             gemsCollected++;
             addSprite(7, 3, goldenTomb);
-            ghoulImmuneLevels.push([3, 3]);
-            sleepyGhoulImmuneLevels.push([3, 3]);
-            skeletonImmuneLevels.push([3, 3]);
-            babyGhoulImmuneLevels.push([3, 3]);
+            ghoulLevels = ghoulLevels.filter(n => n!==butcheryCoords);
+            babyGhoulLevels = babyGhoulLevels.filter(n => n!==butcheryCoords);
+            sleepyGhoulLevels = sleepyGhoulLevels.filter(n => n!==butcheryCoords);
+            babyGhoulLevels = babyGhoulLevels.filter(n => n!==butcheryCoords);
+            skeletonLevels = skeletonLevels.filter(n => n!==butcheryCoords);
             butcheryGemGotten = true;
             if (mazeGemGotten) {
               playerHealth = 5;
             } else {
               playerHealth = 3;
             }
-            updateHealthTile();
+            updateInfoTiles();
           }
         }
         sprite.remove();
@@ -2161,10 +2290,10 @@ function getValidRandomCoords() {
 }
 
 function manageGhoulSpawns() {
-  let canSpawn = true;
-  ghoulImmuneLevels.forEach(ij => {
+  let canSpawn = false;
+  ghoulLevels.forEach(ij => {
     if (levelI === ij[0] && levelJ === ij[1]) {
-      canSpawn = false;
+      canSpawn = true;
     }
   });
 
@@ -2198,10 +2327,10 @@ function manageGhoulSpawns() {
 }
 
 function manageBabyGhoulSpawns() {
-  let canSpawn = true;
-  babyGhoulImmuneLevels.forEach(ij => {
+  let canSpawn = false;
+  babyGhoulLevels.forEach(ij => {
     if (levelI === ij[0] && levelJ === ij[1]) {
-      canSpawn = false;
+      canSpawn = true;
     }
   });
 
@@ -2227,10 +2356,10 @@ function manageBabyGhoulSpawns() {
 }
 
 function manageSleepyGhoulSpawns() {
-  let canSpawn = true;
-  sleepyGhoulImmuneLevels.forEach(ij => {
+  let canSpawn = false;
+  sleepyGhoulLevels.forEach(ij => {
     if (levelI === ij[0] && levelJ === ij[1]) {
-      canSpawn = false;
+      canSpawn = true;
     }
   });
   if (canSpawn) {
@@ -2253,10 +2382,10 @@ function manageSleepyGhoulSpawns() {
 }
 
 function manageSkeletonSpawns() {
-  let canSpawn = true;
-  skeletonImmuneLevels.forEach(ij => {
+  let canSpawn = false;
+  skeletonLevels.forEach(ij => {
     if (levelI === ij[0] && levelJ === ij[1]) {
-      canSpawn = false;
+      canSpawn = true;
     }
   });
   if (canSpawn) {
@@ -2308,9 +2437,11 @@ function xAndYCoordMotionEnemy(enemyType) {
       else if (playerY < enemy.y) enemy.y--;
       else if (playerY === enemy.y) {
         if (playerHealth > 0) playerHealth--;
-        updateHealthTile();
+        updateInfoTiles();
         if (playerHealth < 1) {
-          //DEAD!
+          levelI = deathEnd[0];
+          levelJ = deathEnd[1];
+          setMap(levels[levelI][levelJ]);
           // dont do anything now for debugging
         }
       }
@@ -2319,9 +2450,9 @@ function xAndYCoordMotionEnemy(enemyType) {
       else if (playerX < enemy.x) enemy.x--;
       else if (playerY === enemy.y) {
         if (playerHealth > 0) playerHealth--;
-        updateHealthTile();
+        updateInfoTiles();
         if (playerHealth < 1) {
-          //DEAD!
+                    levelI = deathEnd[0];           levelJ = deathEnd[1];           setMap(levels[levelI][levelJ]);
           // dont do anything now for debugging
         }
       }
@@ -2332,9 +2463,9 @@ function xAndYCoordMotionEnemy(enemyType) {
         else if (playerX < enemy.x) enemy.x--;
         else if (playerY === enemy.y) {
           if (playerHealth > 0) playerHealth--;
-          updateHealthTile();
+          updateInfoTiles();
           if (playerHealth < 1) {
-            //DEAD!
+                      levelI = deathEnd[0];           levelJ = deathEnd[1];           setMap(levels[levelI][levelJ]);
             // dont do anything now for debugging
           }
         }
@@ -2343,9 +2474,9 @@ function xAndYCoordMotionEnemy(enemyType) {
         else if (playerY < enemy.y) enemy.y--;
         else if (playerY === enemy.y) {
           if (playerHealth > 0) playerHealth--;
-          updateHealthTile();
+          updateInfoTiles();
           if (playerHealth < 1) {
-            //DEAD!
+                      levelI = deathEnd[0];           levelJ = deathEnd[1];           setMap(levels[levelI][levelJ]);
             // dont do anything now for debugging
           }
         }
@@ -2387,9 +2518,9 @@ setInterval(() => {
         currentGhoul.y--;
       } else {
         if (playerHealth > 0) playerHealth--;
-        updateHealthTile();
+        updateInfoTiles();
         if (playerHealth < 1) {
-          //DEAD!
+                    levelI = deathEnd[0];           levelJ = deathEnd[1];           setMap(levels[levelI][levelJ]);
           // dont do anything now for debugging
         }
       }
@@ -2402,9 +2533,9 @@ setInterval(() => {
         currentGhoul.x--;
       } else {
         if (playerHealth > 0) playerHealth--;
-        updateHealthTile();
+        updateInfoTiles();
         if (playerHealth < 1) {
-          //DEAD!
+                    levelI = deathEnd[0];           levelJ = deathEnd[1];           setMap(levels[levelI][levelJ]);
           // dont do anything now for debugging
         }
       }
@@ -2422,9 +2553,9 @@ setInterval(() => {
     spawnskeletonArrow(skeleton);
     if (getFirst(player).x === skeleton.x && getFirst(player).y === skeleton.Y) {
       if (playerHealth > 0) playerHealth--;
-      updateHealthTile();
+      updateInfoTiles();
       if (playerHealth < 1) {
-        //DEAD!
+                  levelI = deathEnd[0];           levelJ = deathEnd[1];           setMap(levels[levelI][levelJ]);
         // dont do anything now for debugging
       }
     }
@@ -2434,9 +2565,9 @@ setInterval(() => {
 
     if (getFirst(player).x === skeleton.x && getFirst(player).y === skeleton.Y) {
       if (playerHealth > 0) playerHealth--;
-      updateHealthTile();
+      updateInfoTiles();
       if (playerHealth < 1) {
-        //DEAD!
+                  levelI = deathEnd[0];           levelJ = deathEnd[1];           setMap(levels[levelI][levelJ]);
         // dont do anything now for debugging
       }
     }
@@ -2547,14 +2678,17 @@ afterInput(() => {
     inverterGemGotten = true;
     if (mazeGemGotten) playerHealth = 5;
     else playerHealth = 3;
-    updateHealthTile();
+    updateInfoTiles();
   }
 
   if (tilesWith(player, backToStartTper).length !== 0) {
-    levelI = initI;
-    levelJ = initJ;
+    levelI = gameStart[0];
+    levelJ = gameStart[1];
     setMap(levels[levelI][levelJ])
-    updateHealthTile();
+    texts = [];
+    if(mazeGemGotten) playerHealth = 5; // used in death tp
+    else playerHealth = 3; // used in death tp
+    updateInfoTiles();
   }
 
   if (di !== 0 || dj !== 0) {
@@ -2566,11 +2700,11 @@ afterInput(() => {
       gemsCollected++;
       mazeGemGotten = true;
       playerHealth = 5;
-      updateHealthTile();
+      updateInfoTiles();
     }
 
     setMap(levels[levelI][levelJ]);
-    updateHealthTile();
+    updateInfoTiles();
     if (levelI === initI && levelJ === initJ) { // player just entered the starting room again
       if (di === -1) { // went down, so spawn on up
         getFirst(player).x = 4;
@@ -2664,7 +2798,7 @@ afterInput(() => {
     addSprite(10, 4, doorRight);
     if(mazeGemGotten) playerHealth=5;
     else playerHealth=3;
-    updateHealthTile();
+    updateInfoTiles();
         gameWon = true;
   }
       console.log("game was", gameWon);
@@ -2684,5 +2818,11 @@ afterInput(() => {
 
     addText("one brave banana.", {y:8, color:color`6`});
     texts.push(["one brave banana.", {y:8, color:color`6`}]);
+  }
+
+  if(levelI === deathEnd[0] && levelJ === deathEnd[1]) {
+    butcheryGemGotten = false;
+    inverterGemGotten = false;
+    mazeGemGotten = false;
   }
 });
