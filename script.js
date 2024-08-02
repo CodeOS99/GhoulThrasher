@@ -1,4 +1,8 @@
+// Am I supposed to add this? I just added random stuff
 /*
+@title: Ghoul Thrasher
+@author: Kushagra
+@tags: ['dungeon', 'rougelike', 'shooter']
 */
 
 function getRandomInt(min, max) {
@@ -3049,5 +3053,7 @@ afterInput(() => {
     inverterGemGotten = false;
     mazeGemGotten = false;
     enteredFinalRoomForTheFirstTime = false;
+    texts = [];
+    refreshText();
   }
 });
