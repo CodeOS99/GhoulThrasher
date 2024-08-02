@@ -1,7 +1,10 @@
+// Am I supposed to add this? I just added random stuff
 /*
-
+@title: Ghoul Thrasher
+@author: Kushagra
+@tags: ['dungeon', 'rougelike', 'shooter']
 */
-// helpers
+
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -84,6 +87,158 @@ const inverterGemFrameEmpty = ")";
 const inverterGemFrameGotten = "(";
 const skull = "_";
 
+// tunes
+const bulletShotTune = tune`
+59.642147117296226: C4/59.642147117296226 + D4/59.642147117296226 + E4/59.642147117296226 + F4/59.642147117296226 + G4/59.642147117296226,
+59.642147117296226: G4/59.642147117296226 + F4/59.642147117296226 + E4/59.642147117296226 + D4/59.642147117296226 + C4/59.642147117296226,
+59.642147117296226: C4^59.642147117296226 + D4^59.642147117296226 + E4^59.642147117296226 + G4^59.642147117296226 + F4^59.642147117296226,
+59.642147117296226: C4~59.642147117296226 + D4~59.642147117296226 + E4~59.642147117296226 + G4~59.642147117296226 + F4~59.642147117296226,
+59.642147117296226: C4~59.642147117296226,
+59.642147117296226: C4~59.642147117296226,
+59.642147117296226: C4~59.642147117296226,
+1491.0536779324057`;
+const playerWalkGrassTune = tune`
+49.504950495049506: B5/49.504950495049506 + C4/49.504950495049506,
+49.504950495049506: B5/49.504950495049506 + C4/49.504950495049506,
+1485.1485148514853`;
+const playerWalkTileTune = tune`
+56.49717514124294: B5^56.49717514124294 + A5^56.49717514124294 + G5^56.49717514124294,
+56.49717514124294: B5^56.49717514124294 + A5^56.49717514124294 + G5^56.49717514124294,
+1694.9152542372883`;
+const invertedPlayerWalkTune = tune`
+58.02707930367505: B5~58.02707930367505 + A5~58.02707930367505 + G5~58.02707930367505,
+58.02707930367505: B5~58.02707930367505,
+1740.8123791102516`;
+const inverterTune = tune`
+200: B5/200,
+6200`;
+
+const normalBulletHitTune = tune`
+95.54140127388536: C4/95.54140127388536 + D4~95.54140127388536,
+2961.783439490446`;
+
+const gemGotTune = tune`
+82.87292817679558: B5/82.87292817679558,
+82.87292817679558: A5/82.87292817679558,
+82.87292817679558: B5/82.87292817679558,
+82.87292817679558: A5/82.87292817679558,
+82.87292817679558: G5/82.87292817679558,
+82.87292817679558: F5/82.87292817679558,
+82.87292817679558: G5/82.87292817679558,
+82.87292817679558: F5/82.87292817679558,
+82.87292817679558: E5/82.87292817679558,
+82.87292817679558: F5/82.87292817679558,
+82.87292817679558: E5/82.87292817679558,
+82.87292817679558: D5/82.87292817679558,
+82.87292817679558: C5/82.87292817679558,
+82.87292817679558: B4/82.87292817679558,
+1491.7127071823204`;
+const deadTune = tune`
+42.73504273504273: B5/42.73504273504273,
+42.73504273504273: A5/42.73504273504273,
+42.73504273504273: G5/42.73504273504273,
+42.73504273504273: E5/42.73504273504273,
+42.73504273504273: D5/42.73504273504273 + A5-42.73504273504273,
+42.73504273504273: C5/42.73504273504273 + G5-42.73504273504273,
+42.73504273504273: A4/42.73504273504273 + F5-42.73504273504273,
+42.73504273504273: G4/42.73504273504273 + D5-42.73504273504273 + A5^42.73504273504273,
+42.73504273504273: F4/42.73504273504273 + C5-42.73504273504273 + G5^42.73504273504273,
+42.73504273504273: D4/42.73504273504273 + B4-42.73504273504273 + F5^42.73504273504273,
+42.73504273504273: C4/42.73504273504273 + G4-42.73504273504273 + D5^42.73504273504273,
+42.73504273504273: F4-42.73504273504273 + C5^42.73504273504273,
+42.73504273504273: E4-42.73504273504273 + B4^42.73504273504273,
+42.73504273504273: G4^42.73504273504273,
+42.73504273504273: C4-42.73504273504273 + F4^42.73504273504273,
+42.73504273504273: E4^42.73504273504273,
+42.73504273504273: C4^42.73504273504273,
+42.73504273504273,
+42.73504273504273: C4~42.73504273504273,
+42.73504273504273: C4~42.73504273504273,
+512.8205128205128`;
+const hurtTune = tune`
+50.847457627118644: B5-50.847457627118644 + A5-50.847457627118644 + G5-50.847457627118644,
+50.847457627118644: A5-50.847457627118644 + B5-50.847457627118644 + G5-50.847457627118644,
+1525.4237288135594`;
+const enteredFinalRoomForTheFirstTimeTune = tune`
+50.67567567567568: C4-50.67567567567568,
+50.67567567567568: D4-50.67567567567568 + C4~50.67567567567568,
+50.67567567567568: E4-50.67567567567568 + D4~50.67567567567568 + C4-50.67567567567568,
+50.67567567567568: F4-50.67567567567568 + E4~50.67567567567568 + D4-50.67567567567568,
+50.67567567567568: E4-50.67567567567568 + G4^50.67567567567568 + F4~50.67567567567568,
+50.67567567567568: F4-50.67567567567568 + A4^50.67567567567568 + G4~50.67567567567568,
+50.67567567567568: G4-50.67567567567568 + B4^50.67567567567568 + A4~50.67567567567568,
+50.67567567567568: A4-50.67567567567568 + C5^50.67567567567568 + B4~50.67567567567568,
+50.67567567567568: B4~50.67567567567568 + A4-50.67567567567568 + C5^50.67567567567568,
+50.67567567567568: A4~50.67567567567568 + G4-50.67567567567568 + B4^50.67567567567568,
+50.67567567567568: G4~50.67567567567568 + F4-50.67567567567568 + A4^50.67567567567568,
+50.67567567567568: F4~50.67567567567568 + E4-50.67567567567568 + G4^50.67567567567568,
+50.67567567567568: G4~50.67567567567568 + A4^50.67567567567568 + F4-50.67567567567568,
+50.67567567567568: F4~50.67567567567568 + G4^50.67567567567568 + E4-50.67567567567568,
+50.67567567567568: E4~50.67567567567568 + F4^50.67567567567568 + D4-50.67567567567568,
+50.67567567567568: D4~50.67567567567568 + E4^50.67567567567568 + C4-50.67567567567568,
+50.67567567567568: C4~50.67567567567568 + D4^50.67567567567568,
+760.1351351351352`;
+const nuclearBarrelHitTune = tune`
+65.21739130434783: B5/65.21739130434783 + A5-65.21739130434783,
+65.21739130434783: A5/65.21739130434783 + F5-65.21739130434783 + B5^65.21739130434783,
+65.21739130434783: G5/65.21739130434783 + E5-65.21739130434783 + B5^65.21739130434783,
+65.21739130434783: F5/65.21739130434783 + A5^65.21739130434783,
+65.21739130434783: G5^65.21739130434783,
+1760.8695652173913`;
+const nuclearSplashHitTune = tune`
+50.08347245409015: B5/50.08347245409015,
+50.08347245409015: C4/50.08347245409015,
+50.08347245409015: B5/50.08347245409015,
+1452.4207011686144`;
+const winGameTune = tune`
+114.94252873563218: B5~114.94252873563218,
+114.94252873563218: A5~114.94252873563218,
+114.94252873563218: G5~114.94252873563218,
+229.88505747126436,
+114.94252873563218: G5~114.94252873563218,
+114.94252873563218: F5~114.94252873563218,
+114.94252873563218: E5~114.94252873563218,
+114.94252873563218: F5~114.94252873563218,
+114.94252873563218: E5~114.94252873563218,
+114.94252873563218: B4^114.94252873563218,
+114.94252873563218: C5^114.94252873563218,
+114.94252873563218: D5^114.94252873563218,
+114.94252873563218: E5^114.94252873563218,
+114.94252873563218: F5^114.94252873563218,
+114.94252873563218: G5^114.94252873563218,
+114.94252873563218,
+114.94252873563218: A5^114.94252873563218,
+114.94252873563218: A5-114.94252873563218,
+114.94252873563218: A5/114.94252873563218,
+1379.310344827586`;
+
+const winGameBGTune = tune`
+90.9090909090909: B5/90.9090909090909,
+90.9090909090909: A5/90.9090909090909,
+90.9090909090909: G5/90.9090909090909,
+90.9090909090909: F5/90.9090909090909,
+90.9090909090909: E5/90.9090909090909,
+90.9090909090909: F5/90.9090909090909,
+90.9090909090909: G5/90.9090909090909,
+90.9090909090909: F5/90.9090909090909,
+90.9090909090909: E5/90.9090909090909,
+90.9090909090909: D5/90.9090909090909,
+90.9090909090909: C4/90.9090909090909,
+90.9090909090909: D4/90.9090909090909,
+90.9090909090909: E4/90.9090909090909,
+90.9090909090909: F4/90.9090909090909,
+90.9090909090909: G4/90.9090909090909,
+90.9090909090909: A4/90.9090909090909,
+90.9090909090909: G4/90.9090909090909,
+90.9090909090909: F4/90.9090909090909,
+90.9090909090909: G4/90.9090909090909,
+90.9090909090909: A4/90.9090909090909,
+90.9090909090909: B4/90.9090909090909,
+90.9090909090909: C5~90.9090909090909,
+909.090909090909`;
+
+let gameWon = false;
+
 const bulletVels = {
   ">": [1, 0],
   "<": [-1, 0],
@@ -110,7 +265,7 @@ const enemies = [
   houseLaser,
 ];
 
-const butcheryMax = 10;
+const butcheryMax = 50;
 
 const enemyScoreMap = {
   "H": 2,
@@ -152,7 +307,6 @@ const gameStart = [3, 2];
 const deathEnd = [1, 3];
 
 // Gems declaration
-//TODO CHANGE GEMS STATE ON RELEASE
 let mazeGemGotten = false;
 let butcheryGemGotten = false;
 let inverterGemGotten = false;
@@ -176,12 +330,11 @@ let skeletonCounterMax = 100;
 let babyGhoulCounter = 0;
 let babyGhoulCounterMax = 50;
 
-// have text?(needed for clearText shenanigins in afterMovement in room 0, 1
 let texts = [];
 
 let playerHealth = 3;
 
-const maxHouseHealth = 1;
+const maxHouseHealth = 15;
 let houseHealth = maxHouseHealth;
 
 const phaseTwoChange = 12;
@@ -209,6 +362,8 @@ let butcheryScore = 0;
 let gemsCollected = 0;
 
 let inverted = false;
+
+let enteredFinalRoomForTheFirstTime = false;
 
 let pushableList = [];
 let buttonCoords = {
@@ -253,7 +408,7 @@ CCCCCCCCCCCCCCCC
 CCCCC000000CCCCC
 CCCCC022220CCCCC
 CCCCC000000CCCCC`],
-  
+
   [butcheryGemFrameEmpty, bitmap`
 3399999999999933
 3399999999999933
@@ -1560,12 +1715,12 @@ const levels = [
   ['',
     '',
     map`
-w-/='ww
+wwww'ww
 wttp[]w
 wttl{}w
 wttmffw
 wwwwwww`, // maze
-   map`
+    map`
 wwwwwww
 wgggggw
 +gpgggw
@@ -1610,7 +1765,7 @@ wgwggggwgw
 wgwgwwwwgw
 wggggggggw
 www"wwwwww`, // maze
-   map`
+    map`
 wwwwwww
 w_____w
 +_____w
@@ -1866,15 +2021,15 @@ function getMapHeight() {
 
 setMap(levels[levelI][levelJ]);
 
-addText("Welcome to", {y:7, color:color`6`});
-addText("Ghoul Thrasher!", {y:8, color:color`6`});
-addText("To embark,", {y:9, color:color`6`});
-addText("Go through the TP", {y:10, color:color`6`});
+addText("Welcome to", { y: 7, color: color`6` });
+addText("Ghoul Thrasher!", { y: 8, color: color`6` });
+addText("To embark,", { y: 9, color: color`6` });
+addText("Go through the TP", { y: 10, color: color`6` });
 
-texts.push(["Welcome to", {y:7, color:color`6`}]);
-texts.push(["Ghoul Thrasher!", {y:8, color:color`6`}]);
-texts.push(["To embark,", {y:9, color:color`6`}]);
-texts.push(["Go through the TP", {y:10, color:color`6`}]);
+texts.push(["Welcome to", { y: 7, color: color`6` }]);
+texts.push(["Ghoul Thrasher!", { y: 8, color: color`6` }]);
+texts.push(["To embark,", { y: 9, color: color`6` }]);
+texts.push(["Go through the TP", { y: 10, color: color`6` }]);
 
 setPushables({
   [player]: [pushable]
@@ -1882,32 +2037,60 @@ setPushables({
 
 onInput("w", () => {
   if (getFirst(player) === undefined) {
+    playTune(invertedPlayerWalkTune);
     getFirst(invertedPlayer).y -= PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
   } else {
+    if (levelI === bossRoom[0] && levelJ === bossRoom[1]) {
+      playTune(playerWalkTileTune);
+    } else {
+      if(!gameWon) playTune(playerWalkGrassTune);
+    }
+
     getFirst(player).y -= PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
   }
 });
 
 onInput("a", () => {
   if (getFirst(player) === undefined) {
+    playTune(invertedPlayerWalkTune);
     getFirst(invertedPlayer).x -= PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
   } else {
+    if (levelI === bossRoom[0] && levelJ === bossRoom[1]) {
+      playTune(playerWalkTileTune);
+    } else {
+      if(!gameWon) playTune(playerWalkGrassTune);
+    }
+
     getFirst(player).x -= PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
   }
 });
 
 onInput("s", () => {
   if (getFirst(player) === undefined) {
+    playTune(invertedPlayerWalkTune);
     getFirst(invertedPlayer).y += PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
   } else {
+    if (levelI === bossRoom[0] && levelJ === bossRoom[1]) {
+      playTune(playerWalkTileTune);
+    } else {
+      if(!gameWon) playTune(playerWalkGrassTune);
+    }
+
     getFirst(player).y += PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
   }
 });
 
 onInput("d", () => {
   if (getFirst(player) === undefined) {
+    playTune(invertedPlayerWalkTune);
     getFirst(invertedPlayer).x += PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
   } else {
+    if (levelI === bossRoom[0] && levelJ === bossRoom[1]) {
+      playTune(playerWalkTileTune);
+    } else {
+      if(!gameWon) playTune(playerWalkGrassTune);
+    }
+
     getFirst(player).x += PLAYER_WALK_SPEED; // The actual movement is done in afterInput function, since we need to redraw the map
   }
 });
@@ -1915,9 +2098,9 @@ onInput("d", () => {
 onInput("i", () => {
   if (!isInverter()) {
     if (canShootBullet) {
+      if(!gameWon) playTune(bulletShotTune);
       addSprite(getFirst(player).x, getFirst(player).y - 1, bulletUp);
       canShootBullet = false;
-      checkBulletEnemyKillAll(bulletUp);
       if (inverterGemGotten) {
         shootBootlegBullet(0, -1);
       }
@@ -1930,9 +2113,9 @@ onInput("i", () => {
 onInput("j", () => {
   if (!isInverter()) {
     if (canShootBullet) {
+      if(!gameWon) playTune(bulletShotTune);
       addSprite(getFirst(player).x - 1, getFirst(player).y, bulletLeft);
       canShootBullet = false;
-      checkBulletEnemyKillAll(bulletLeft);
       if (inverterGemGotten) {
         shootBootlegBullet(-1, 0);
       }
@@ -1945,9 +2128,9 @@ onInput("j", () => {
 onInput("k", () => {
   if (!isInverter()) {
     if (canShootBullet) {
+      if(!gameWon) playTune(bulletShotTune);
       addSprite(getFirst(player).x, getFirst(player).y + 1, bulletDown);
       canShootBullet = false;
-      checkBulletEnemyKillAll(bulletDown);
       if (inverterGemGotten) {
         shootBootlegBullet(0, 1);
       }
@@ -1961,9 +2144,9 @@ onInput("k", () => {
 onInput("l", () => {
   if (!isInverter()) {
     if (canShootBullet) {
+      if(!gameWon) playTune(bulletShotTune);
       addSprite(getFirst(player).x + 1, getFirst(player).y, bulletRight);
       canShootBullet = false;
-      checkBulletEnemyKillAll(bulletRight);
       if (inverterGemGotten) {
         shootBootlegBullet(1, 0);
       }
@@ -2016,7 +2199,6 @@ function shootBootlegBullet(dx, dy) { // dx and dy so we can avoid them
 function updateInfoTiles() {
   // Health tile logic
   if (!mazeGemGotten) { // 3 health
-    console.log(getMapWidth() - 1);
     clearTile(0, 0);
     addSprite(0, 0, `${playerHealth+6}`);
   } else { // 5 health
@@ -2027,29 +2209,30 @@ function updateInfoTiles() {
   clearTile(1, 0);
   clearTile(2, 0);
   clearTile(3, 0);
-  
+
   // Gem display logic
-  if(mazeGemGotten) {
+  if (mazeGemGotten) {
     addSprite(1, 0, mazeGemFrameGotten);
   } else {
-    addSprite(1, 0, mazeGemFrameEmpty);    
+    addSprite(1, 0, mazeGemFrameEmpty);
   }
-  
-  if(butcheryGemGotten) {
+
+  if (butcheryGemGotten) {
     addSprite(2, 0, butcheryGemFrameGotten);
   } else {
-    addSprite(2, 0, butcheryGemFrameEmpty);    
+    addSprite(2, 0, butcheryGemFrameEmpty);
   }
-  
-  if(inverterGemGotten) {
+
+  if (inverterGemGotten) {
     addSprite(3, 0, inverterGemFrameGotten);
   } else {
-    addSprite(3, 0, inverterGemFrameEmpty);    
+    addSprite(3, 0, inverterGemFrameEmpty);
   }
 }
 
 function invert() {
   let nowX, nowY;
+  playTune(inverterTune);
   if (inverted) {
     nowX = getFirst(invertedPlayer).x;
     nowY = getFirst(invertedPlayer).y;
@@ -2073,7 +2256,6 @@ function invert() {
     levelJ++;
     for (let pushable1 of getAll(pushable)) {
       pushableList.push([pushable1.x, pushable1.y]);
-      console.log(pushableList);
     }
     setMap(levels[levelI][levelJ]);
     updateInfoTiles();
@@ -2121,13 +2303,11 @@ function checkAllBulletKillAllEnemy() {
 
 function bulletEnemyKill(bulletType, enemyType) {
   tilesWith(enemyType, bulletType).forEach(enemyAndBullet => {
+    playTune(normalBulletHitTune);
     enemyAndBullet.forEach((sprite) => {
       if (sprite._type === bulletType || sprite._type === enemyType) {
         if (levelI === butcheryCoords[0] && levelJ === butcheryCoords[1]) {
           butcheryScore += enemyScoreMap[enemyType];
-          console.log(enemyScoreMap[enemyType]);
-          console.log(`The enemy is ${enemyType}`)
-          console.log(`The entire table is ${enemyScoreMap}`);
           let options = { y: 15, color: color`3` };
           texts.push([`The Butchery, ${butcheryScore}/${butcheryMax}`, options]);
           texts = texts.filter(n => n[0] !== `The Butchery, ${butcheryScore-enemyScoreMap[enemyType]}/${butcheryMax}`);
@@ -2136,11 +2316,12 @@ function bulletEnemyKill(bulletType, enemyType) {
           if (butcheryScore === butcheryMax && !butcheryGemGotten) {
             gemsCollected++;
             addSprite(7, 3, goldenTomb);
-            ghoulLevels = ghoulLevels.filter(n => n!==butcheryCoords);
-            babyGhoulLevels = babyGhoulLevels.filter(n => n!==butcheryCoords);
-            sleepyGhoulLevels = sleepyGhoulLevels.filter(n => n!==butcheryCoords);
-            babyGhoulLevels = babyGhoulLevels.filter(n => n!==butcheryCoords);
-            skeletonLevels = skeletonLevels.filter(n => n!==butcheryCoords);
+            ghoulLevels = ghoulLevels.filter(n => n !== butcheryCoords);
+            babyGhoulLevels = babyGhoulLevels.filter(n => n !== butcheryCoords);
+            sleepyGhoulLevels = sleepyGhoulLevels.filter(n => n !== butcheryCoords);
+            babyGhoulLevels = babyGhoulLevels.filter(n => n !== butcheryCoords);
+            skeletonLevels = skeletonLevels.filter(n => n !== butcheryCoords);
+            if (!butcheryGemGotten) playTune(gemGotTune);
             butcheryGemGotten = true;
             if (mazeGemGotten) {
               playerHealth = 5;
@@ -2165,10 +2346,10 @@ function nuclearSplashCheck(splashType) {
 
 function nuclearHousePartCheck(splashType, houseType) {
   tilesWith(splashType, houseType).forEach(pair => {
-    console.log(splashType);
-    if(pair[0]._type === splashType) {
+    playTune(nuclearSplashHitTune);
+    if (pair[0]._type === splashType) {
       pair[0].remove();
-    } else if(pair[1]._type === splashType){
+    } else if (pair[1]._type === splashType) {
       pair[1].remove();
     }
     houseHealth--;
@@ -2204,6 +2385,7 @@ function moveBullets(bulletType) {
 
 function nuclearExplosionCheck(bulletType) {
   tilesWith(bulletType, nuclearBarrel).forEach(bulletBarrel => {
+    playTune(nuclearBarrelHitTune);
     bulletBarrel.forEach(sprite => {
       if (sprite._type === nuclearBarrel) { // only spawn splashes now
         addSprite(sprite.x + 1, sprite.y, nuclearSplashRight);
@@ -2241,9 +2423,9 @@ setInterval(() => {
 
 // Nuclear Barrel Spawning Logic
 setInterval(() => {
-  if(levelI === bossRoom[0] && levelJ === bossRoom[1]) {
-    nuclearBarrelCurrent ++;
-    if(nuclearBarrelCurrent >= nuclearBarrelMax) {
+  if (levelI === bossRoom[0] && levelJ === bossRoom[1]) {
+    nuclearBarrelCurrent++;
+    if (nuclearBarrelCurrent >= nuclearBarrelMax) {
       nuclearBarrelCurrent = 0;
       coords = getValidRandomCoords();
       addSprite(coords[0], coords[1], nuclearBarrel);
@@ -2277,7 +2459,7 @@ function getValidRandomCoords() {
   }
 
   // Check to make sure nothing spawns at the houses in the final boss room
-  if(levelI === bossRoom[0] && levelJ === bossRoom[1] && ((randomX === 2 && randomY === 2) || (randomX === 2 && randomY === 3) || (randomX === 3 && randomY === 2) || (randomX === 3 && randomY === 3))) {
+  if (levelI === bossRoom[0] && levelJ === bossRoom[1] && ((randomX === 2 && randomY === 2) || (randomX === 2 && randomY === 3) || (randomX === 3 && randomY === 2) || (randomX === 3 && randomY === 3))) {
     return getValidRandomCoords();
   }
 
@@ -2314,7 +2496,6 @@ function manageGhoulSpawns() {
       } else {
         addSprite(randomX, randomY, ghoulLeft);
       }
-      //console.log(`${randomX}, ${randomY}`);
       ghoulCounterMax += getRandomInt(-5 - difficultyGhoulSpawn, 15); // add some randomness, give more weight to increase since we dont want the player to die as soon as they spawn
       //ghoulCounterMax += 1000;
       ghoulDifficultyIncreaser++;
@@ -2375,8 +2556,6 @@ function manageSleepyGhoulSpawns() {
         randomY = getRandomInt(1, getMapHeight() - 3);
       }
       addSprite(randomX, randomY, sleepyGhoul);
-      //console.log(`${randomX}, ${randomY}`);
-      //sleepyGhoulCounterMax += 1000;
     }
   }
 }
@@ -2398,8 +2577,6 @@ function manageSkeletonSpawns() {
       } else {
         addSprite(randoms[0], randoms[1], skeletonRight);
       }
-      //console.log(`${randomX}, ${randomY}`);
-      //sleepyGhoulCounterMax += 1000;
     }
   }
 }
@@ -2436,9 +2613,13 @@ function xAndYCoordMotionEnemy(enemyType) {
       if (playerY > enemy.y) enemy.y++;
       else if (playerY < enemy.y) enemy.y--;
       else if (playerY === enemy.y) {
-        if (playerHealth > 0) playerHealth--;
+        if (playerHealth > 0) {
+          playTune(hurtTune);
+          playerHealth--;
+        }
         updateInfoTiles();
         if (playerHealth < 1) {
+          playTune(deadTune);
           levelI = deathEnd[0];
           levelJ = deathEnd[1];
           setMap(levels[levelI][levelJ]);
@@ -2449,10 +2630,16 @@ function xAndYCoordMotionEnemy(enemyType) {
       if (playerX > enemy.x) enemy.x++;
       else if (playerX < enemy.x) enemy.x--;
       else if (playerY === enemy.y) {
-        if (playerHealth > 0) playerHealth--;
+        if (playerHealth > 0) {
+          playerHealth--;
+          playTune(hurtTune);
+        }
         updateInfoTiles();
         if (playerHealth < 1) {
-                    levelI = deathEnd[0];           levelJ = deathEnd[1];           setMap(levels[levelI][levelJ]);
+          playTune(deadTune);
+          levelI = deathEnd[0];
+          levelJ = deathEnd[1];
+          setMap(levels[levelI][levelJ]);
           // dont do anything now for debugging
         }
       }
@@ -2462,10 +2649,16 @@ function xAndYCoordMotionEnemy(enemyType) {
         if (playerX > enemy.x) enemy.x++;
         else if (playerX < enemy.x) enemy.x--;
         else if (playerY === enemy.y) {
-          if (playerHealth > 0) playerHealth--;
+          if (playerHealth > 0) {
+            playerHealth--;
+            playTune(hurtTune);
+          }
           updateInfoTiles();
           if (playerHealth < 1) {
-                      levelI = deathEnd[0];           levelJ = deathEnd[1];           setMap(levels[levelI][levelJ]);
+            playTune(deadTune);
+            levelI = deathEnd[0];
+            levelJ = deathEnd[1];
+            setMap(levels[levelI][levelJ]);
             // dont do anything now for debugging
           }
         }
@@ -2473,10 +2666,16 @@ function xAndYCoordMotionEnemy(enemyType) {
         if (playerY > enemy.y) enemy.y++;
         else if (playerY < enemy.y) enemy.y--;
         else if (playerY === enemy.y) {
-          if (playerHealth > 0) playerHealth--;
+          if (playerHealth > 0) {
+            playerHealth--;
+            playTune(hurtTune);
+          } 
           updateInfoTiles();
           if (playerHealth < 1) {
-                      levelI = deathEnd[0];           levelJ = deathEnd[1];           setMap(levels[levelI][levelJ]);
+            playTune(deadTune);
+            levelI = deathEnd[0];
+            levelJ = deathEnd[1];
+            setMap(levels[levelI][levelJ]);
             // dont do anything now for debugging
           }
         }
@@ -2517,10 +2716,16 @@ setInterval(() => {
         bulletEnemyKill(bulletDown, sleepyGhoul);
         currentGhoul.y--;
       } else {
-        if (playerHealth > 0) playerHealth--;
+        if (playerHealth > 0) {
+          playerHealth--;
+          playTune(hurtTune);
+                }
         updateInfoTiles();
         if (playerHealth < 1) {
-                    levelI = deathEnd[0];           levelJ = deathEnd[1];           setMap(levels[levelI][levelJ]);
+          playTune(deadTune);
+          levelI = deathEnd[0];
+          levelJ = deathEnd[1];
+          setMap(levels[levelI][levelJ]);
           // dont do anything now for debugging
         }
       }
@@ -2532,10 +2737,16 @@ setInterval(() => {
         bulletEnemyKill(bulletRight, sleepyGhoul);
         currentGhoul.x--;
       } else {
-        if (playerHealth > 0) playerHealth--;
+        if (playerHealth > 0) {
+          playerHealth--;
+          playTune(hurtTune);
+                }
         updateInfoTiles();
         if (playerHealth < 1) {
-                    levelI = deathEnd[0];           levelJ = deathEnd[1];           setMap(levels[levelI][levelJ]);
+          playTune(deadTune);
+          levelI = deathEnd[0];
+          levelJ = deathEnd[1];
+          setMap(levels[levelI][levelJ]);
           // dont do anything now for debugging
         }
       }
@@ -2552,10 +2763,16 @@ setInterval(() => {
   getAll(skeletonLeft).forEach(skeleton => {
     spawnskeletonArrow(skeleton);
     if (getFirst(player).x === skeleton.x && getFirst(player).y === skeleton.Y) {
-      if (playerHealth > 0) playerHealth--;
+      if (playerHealth > 0) {
+        playerHealth--;
+        playTune(hurtTune);
+      }
       updateInfoTiles();
       if (playerHealth < 1) {
-                  levelI = deathEnd[0];           levelJ = deathEnd[1];           setMap(levels[levelI][levelJ]);
+        playTune(deadTune);
+        levelI = deathEnd[0];
+        levelJ = deathEnd[1];
+        setMap(levels[levelI][levelJ]);
         // dont do anything now for debugging
       }
     }
@@ -2564,10 +2781,16 @@ setInterval(() => {
     spawnskeletonArrow(skeleton);
 
     if (getFirst(player).x === skeleton.x && getFirst(player).y === skeleton.Y) {
-      if (playerHealth > 0) playerHealth--;
+      if (playerHealth > 0) {
+        playerHealth--;
+        playTune(hurtTune);
+      }
       updateInfoTiles();
       if (playerHealth < 1) {
-                  levelI = deathEnd[0];           levelJ = deathEnd[1];           setMap(levels[levelI][levelJ]);
+        playTune(deadTune);
+        levelI = deathEnd[0];
+        levelJ = deathEnd[1];
+        setMap(levels[levelI][levelJ]);
         // dont do anything now for debugging
       }
     }
@@ -2584,26 +2807,25 @@ let attackCounterMax = 12;
 let bossPhase = 1;
 // Final boss attack mechanism
 setInterval(() => {
-  if(levelI === bossRoom[0] && levelJ === bossRoom[1] && houseHealth > 0) {
+  if (levelI === bossRoom[0] && levelJ === bossRoom[1] && houseHealth > 0) {
     attackCounter++;
-    if(houseHealth === phaseTwoChange) {
+    if (houseHealth === phaseTwoChange) {
       bossPhase = 2;
       nuclearBarrelMax = 35
     }
-    if(houseHealth === phaseThreeChange) {
+    if (houseHealth === phaseThreeChange) {
       bossPhase = 3;
       nuclearBarrelMax = 45
     }
-    if(houseHealth === phaseFourChange) {
+    if (houseHealth === phaseFourChange) {
       nuclearBarrelMax = 55
     }
-    if(attackCounter >= attackCounterMax/bossPhase) {
+    if (attackCounter >= attackCounterMax / bossPhase) {
       attackCounter = 0;
       let attack = getRandomInt(0, 1);
-      if(attack === 0) {
+      if (attack === 0) {
         spawnLaser();
-      } else if(attack === 1) {
-        // TODO add sound to that the player knows what happened
+      } else if (attack === 1) {
         spawnRandomEnemies();
       }
     }
@@ -2613,23 +2835,23 @@ setInterval(() => {
 
 // boss phase 3+ doesnt affect this
 function spawnLaser() {
-  addSprite(getFirst(houseTopLeft2).x-1, getFirst(houseTopLeft2).y, houseLaser);
+  addSprite(getFirst(houseTopLeft2).x - 1, getFirst(houseTopLeft2).y, houseLaser);
 
-  if(bossPhase === 2) {
-    addSprite(getFirst(houseTopRight2).x+1, getFirst(houseTopRight2).y, houseLaser);
+  if (bossPhase === 2) {
+    addSprite(getFirst(houseTopRight2).x + 1, getFirst(houseTopRight2).y, houseLaser);
   }
 
-  if(bossPhase === 3) {
-    addSprite(getFirst(houseBottomLeft2).x+1, getFirst(houseBottomLeft2).y, houseLaser);
+  if (bossPhase === 3) {
+    addSprite(getFirst(houseBottomLeft2).x + 1, getFirst(houseBottomLeft2).y, houseLaser);
   }
 }
 
 // boss phase 2+ doesnt affect this
 function spawnRandomEnemies() {
   let possibleEnemies = [ghoulLeft, ghoulRight, babyGhoulLeft, babyGhoulRight, skeletonLeft, skeletonRight]; // No sleeping ghosts because those things are harder than the actual boss 
-  for(let i = 0; i < Math.min(bossPhase, 2); i++) {
+  for (let i = 0; i < Math.min(bossPhase, 2); i++) {
     let randCoords = getValidRandomCoords();
-    let randEnemy = possibleEnemies[getRandomInt(0, possibleEnemies.length-1)];
+    let randEnemy = possibleEnemies[getRandomInt(0, possibleEnemies.length - 1)];
     addSprite(randCoords[0], randCoords[1], randEnemy);
   }
 }
@@ -2637,7 +2859,6 @@ function spawnRandomEnemies() {
 let di = 0;
 let dj = 0;
 let shownText = false;
-  let gameWon = false;
 afterInput(() => {
   // pushable button connection
   if (buttonCoords[`${levelI},${levelJ}`] !== undefined) {
@@ -2649,7 +2870,6 @@ afterInput(() => {
       for (let coord of targetButtonCoord) {
         if (pushables[i].x === coord[0] && pushables[i].y === coord[1] && pushables[i] !== undefined) {
           buttonFlag = true;
-          console.log("loging ", );
         }
       }
       if (!buttonFlag) {
@@ -2659,7 +2879,7 @@ afterInput(() => {
     if (buttonFlagWhole) {
       dj += 2;
     }
-  }  
+  }
 
   // Player collisions
   if (tilesWith(player, doorLeft).length !== 0 || tilesWith(invertedPlayer, doorLeft).length !== 0) {
@@ -2675,6 +2895,7 @@ afterInput(() => {
   levelJ += dj;
 
   if (levelI === inverterEnd[0] && levelJ === inverterEnd[1]) {
+    if (!inverterGemGotten) playTune(gemGotTune);
     inverterGemGotten = true;
     if (mazeGemGotten) playerHealth = 5;
     else playerHealth = 3;
@@ -2686,7 +2907,7 @@ afterInput(() => {
     levelJ = gameStart[1];
     setMap(levels[levelI][levelJ])
     texts = [];
-    if(mazeGemGotten) playerHealth = 5; // used in death tp
+    if (mazeGemGotten) playerHealth = 5; // used in death tp
     else playerHealth = 3; // used in death tp
     updateInfoTiles();
   }
@@ -2694,11 +2915,10 @@ afterInput(() => {
   if (di !== 0 || dj !== 0) {
     // ALl the inits as well
     initAll();
-    console.log(`${levelI}, ${levelJ}`);
-    console.log(`${mazeEndCoords[0]}, ${mazeEndCoords[1]}`);
     if (levelI === mazeEndCoords[0] && levelJ === mazeEndCoords[1] && !mazeGemGotten) {
       gemsCollected++;
       mazeGemGotten = true;
+      playTune(gemGotTune);
       playerHealth = 5;
       updateInfoTiles();
     }
@@ -2742,7 +2962,6 @@ afterInput(() => {
   let shownWarningText = false;
   if (levelI === warningRoom[0] && levelJ === warningRoom[1]) {
     if (!shownWarningText) {
-      console.log("120");
       let options1 = { y: 3, color: color`3` };
       let options2 = { y: 4, color: color`3` };
       let options3 = { y: 5, color: color`3` };
@@ -2793,36 +3012,48 @@ afterInput(() => {
   if (levelI === bossRoom[0] && levelJ === bossRoom[1]) {
     updateProgressFinalBossText();
   }
-  if(houseHealth <= 0 && gameWon === false) { // only possible in the boss room so no other checks
+  if (houseHealth <= 0 && gameWon === false) { // only possible in the boss room so no other checks
     clearTile(10, 4);
     addSprite(10, 4, doorRight);
-    if(mazeGemGotten) playerHealth=5;
-    else playerHealth=3;
+    if (mazeGemGotten) playerHealth = 5;
+    else playerHealth = 3;
     updateInfoTiles();
-        gameWon = true;
-  }
-      console.log("game was", gameWon);
-
-  if(levelI === bossRoom[0] && levelJ === bossRoom[1]+1) {
-      texts = texts.filter(n => {
-    n[0].includes("Progress")
-  });
-    addText("... and thus", {y:5, color:color`6`});
-    texts.push(["... and thus", {y:5, color:color`6`}]);
-    
-    addText("peace is restored", {y:6, color:color`6`});
-    texts.push(["peace is restored", {y:6, color:color`6`}]);
-
-    addText("all thanks to...", {y:7, color:color`6`});
-    texts.push(["all thanks to...", {y:7, color:color`6`}]);
-
-    addText("one brave banana.", {y:8, color:color`6`});
-    texts.push(["one brave banana.", {y:8, color:color`6`}]);
+    playTune(winGameTune);
+    gameWon = true;
   }
 
-  if(levelI === deathEnd[0] && levelJ === deathEnd[1]) {
+  if(levelI === bossRoom[0] && levelJ === bossRoom[1]) { // literally the only point of this is to play tune
+    if(!enteredFinalRoomForTheFirstTime) {
+      playTune(enteredFinalRoomForTheFirstTimeTune);
+      enteredFinalRoomForTheFirstTime = true
+    }
+  }
+  
+  if (levelI === bossRoom[0] && levelJ === bossRoom[1] + 1) {
+    texts = texts.filter(n => {
+      n[0].includes("Progress")
+    });
+    addText("... and thus", { y: 5, color: color`6` });
+    texts.push(["... and thus", { y: 5, color: color`6` }]);
+
+    addText("peace is restored", { y: 6, color: color`6` });
+    texts.push(["peace is restored", { y: 6, color: color`6` }]);
+
+    addText("all thanks to...", { y: 7, color: color`6` });
+    texts.push(["all thanks to...", { y: 7, color: color`6` }]);
+
+    addText("one brave banana.", { y: 8, color: color`6` });
+    texts.push(["one brave banana.", { y: 8, color: color`6` }]);
+
+    playTune(winGameBGTune, Infinity);
+  }
+
+  if (levelI === deathEnd[0] && levelJ === deathEnd[1]) {
     butcheryGemGotten = false;
     inverterGemGotten = false;
     mazeGemGotten = false;
+    enteredFinalRoomForTheFirstTime = false;
+    texts = [];
+    refreshText();
   }
 });
